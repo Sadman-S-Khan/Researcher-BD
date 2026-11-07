@@ -24,9 +24,11 @@ The Neon integration sets `DATABASE_URL` / `DATABASE_URL_UNPOOLED`; the build de
 | `BLOB_READ_WRITE_TOKEN` | Optional. Vercel Blob for avatar uploads (otherwise small avatars are stored inline) |
 | `CROSSREF_MAILTO` | Optional. Contact email for Crossref's polite pool (DOI import works without it) |
 
-## Demo accounts
-`ayesha@` (faculty), `tanvir@` (researcher), `nusrat@` (student) `…@demo.researcherbd.org`, password `demo1234`.
-Delete them before a real launch.
+## Content
+Starter content (conferences, journals, funding, scholarships, institutions, datasets, lessons) lives in
+`src/lib/seed-content.mjs`, each with an official source link and a last-checked date. The build only fills
+empty tables, so edits made through the site are never overwritten. Old `[Demo]` records and
+`@demo.researcherbd.org` users are removed automatically on deploy.
 
 ## Local development
 ```bash

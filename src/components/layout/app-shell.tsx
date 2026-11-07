@@ -169,7 +169,7 @@ export function AppShell() {
       <AutoLogout />
       {process.env.NEXT_PUBLIC_DB_MODE === 'demo' && (
         <div className="bg-accent text-accent-foreground text-xs sm:text-sm text-center px-4 py-2">
-          Preview mode: sample data is shown and changes you make may be reset. Sign in with a demo account from the login page to try every feature.
+          Preview mode: the permanent database is not connected yet, so accounts and posts you add may be reset.
         </div>
       )}
       <Navbar />

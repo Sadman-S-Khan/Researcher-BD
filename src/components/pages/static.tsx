@@ -189,12 +189,12 @@ export function StaticPage({ which }: { which: 'about' | 'contact' | 'integrity'
             <p><strong className="text-foreground">1. Information we collect.</strong> We collect account information (name, email, role), profile information you provide (institution, research interests, etc.), and platform activity (bookmarks, projects, questions, submissions).</p>
             <p><strong className="text-foreground">2. How we use information.</strong> To provide research discovery, networking, learning, and collaboration features; to verify researchers and institutions; to moderate content; and to improve the platform.</p>
             <p><strong className="text-foreground">3. Public vs. private information.</strong> You control whether your profile is public. Private contact details are never exposed to other users. Private projects are accessible only to members.</p>
-            <p><strong className="text-foreground">4. Data retention and deletion.</strong> You can request data export or account deletion at any time. Deletion removes your account and personal data within 30 days.</p>
+            <p><strong className="text-foreground">4. Data retention and deletion.</strong> You can download your profile data from your profile page. To delete your account, contact us through the Contact page and we will remove your account and personal data.</p>
             <p><strong className="text-foreground">5. Cookies and sessions.</strong> We use HTTP-only cookies for authentication. No third-party tracking cookies.</p>
-            <p><strong className="text-foreground">6. Security.</strong> Passwords are hashed with bcrypt. Row-level security and role-based access control protect data. Service-role keys are server-only.</p>
-            <p><strong className="text-foreground">7. Third-party integrations.</strong> External scholarly APIs (Crossref, OpenAlex, ORCID, Zenodo) are accessed with your explicit action. We do not share your data with them.</p>
+            <p><strong className="text-foreground">6. Security.</strong> Passwords are hashed with bcrypt, sessions use signed HTTP-only cookies, and access to private data is checked on the server for every request.</p>
+            <p><strong className="text-foreground">7. Third-party integrations.</strong> When you import a publication by DOI, the DOI is sent to Crossref or OpenAlex to fetch its metadata. No other personal data is shared with them. The site is hosted on Vercel.</p>
             <p><strong className="text-foreground">8. Children.</strong> The platform is intended for users aged 16 and above.</p>
-            <p className="text-xs">This is a demonstration platform. Replace with reviewed legal text before launch.</p>
+            <p className="text-xs">Last updated 7 November 2026. Questions? Use the Contact page.</p>
           </div>
         ) : (
           <div className="space-y-4 text-sm text-muted-foreground">
@@ -202,12 +202,12 @@ export function StaticPage({ which }: { which: 'about' | 'contact' | 'integrity'
             <p><strong className="text-foreground">2. Eligibility.</strong> You must be 16 or older and provide accurate information.</p>
             <p><strong className="text-foreground">3. User conduct.</strong> Do not post false information, harassment, plagiarism, or content you do not have rights to. Do not attempt to escalate privileges or access private data.</p>
             <p><strong className="text-foreground">4. Verification.</strong> Verification statuses reflect the level of checking performed. They are not endorsements. We never assert indexing claims without a verifiable source.</p>
-            <p><strong className="text-foreground">5. Submissions and moderation.</strong> All submissions are subject to review. We may reject, edit, or remove content. Appeals are supported.</p>
+            <p><strong className="text-foreground">5. Submissions and moderation.</strong> All submissions are subject to review. We may reject, edit, or remove content. Contact us if you think a decision was wrong.</p>
             <p><strong className="text-foreground">6. Intellectual property.</strong> You retain rights to your content. You grant us a license to display it on the platform.</p>
             <p><strong className="text-foreground">7. External links.</strong> We link to external sites. We are not responsible for their content or practices.</p>
             <p><strong className="text-foreground">8. Limitation of liability.</strong> The platform is provided &ldquo;as is&rdquo;. We are not liable for damages arising from use.</p>
             <p><strong className="text-foreground">9. Termination.</strong> We may suspend or terminate accounts that violate these terms.</p>
-            <p className="text-xs">This is a demonstration platform. Replace with reviewed legal text before launch.</p>
+            <p className="text-xs">Last updated 7 November 2026. Questions? Use the Contact page.</p>
           </div>
         )}
       </div>

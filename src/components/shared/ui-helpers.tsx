@@ -21,9 +21,8 @@ export function DemoBanner() {
     <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-200">
       <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
       <span>
-        Records shown are <strong>fictional demonstration data</strong> clearly marked. They are
-        placeholders to show the platform&rsquo;s features and are not real opportunities, journals,
-        datasets, or people.
+        Listings are collected from official sources and show when they were last checked. Dates and
+        requirements can change: always confirm on the official website before you apply or submit.
       </span>
     </div>
   )

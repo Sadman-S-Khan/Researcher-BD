@@ -30,15 +30,21 @@ export function HomePage() {
       .then(r => r.json())
       .then(d => setStats(d))
       .catch(() => {})
-    fetch('/api/opportunities?limit=5&sort=deadline', { cache: 'no-store' })
+    fetch('/api/conferences?limit=50', { cache: 'no-store' })
       .then(r => r.json())
       .then(d => setRecentOpps(d.items ?? []))
       .catch(() => {})
   }, [])
 
+  // Upcoming conferences: open calls first (by submission deadline), then by event date
+  const now = Date.now() - 86400000
   const closingSoon = [...recentOpps]
-    .filter(o => !o.deadline || new Date(o.deadline).getTime() > Date.now() - 86400000)
-    .sort((a, b) => (a.deadline ? new Date(a.deadline).getTime() : Infinity) - (b.deadline ? new Date(b.deadline).getTime() : Infinity))
+    .filter(c => c.eventDate && new Date(c.eventDate).getTime() > now)
+    .map(c => {
+      const open = c.submissionDeadline && new Date(c.submissionDeadline).getTime() > now
+      return { ...c, open, when: new Date(open ? c.submissionDeadline : c.eventDate).getTime() }
+    })
+    .sort((a, b) => (a.open === b.open ? a.when - b.when : a.open ? -1 : 1))
     .slice(0, 5)
 
   const features = [
@@ -142,27 +148,26 @@ export function HomePage() {
 
           <aside aria-labelledby="closing-soon" className="rounded-xl border border-border bg-card">
             <div className="flex items-baseline justify-between px-5 pt-5 pb-3">
-              <h2 id="closing-soon" className="text-xl">{locale === 'bn' ? 'শীঘ্রই শেষ হচ্ছে' : 'Closing soon'}</h2>
-              <button onClick={() => navigate('opportunities')} className="text-sm text-primary hover:underline">{t('common.view')}</button>
+              <h2 id="closing-soon" className="text-xl">{locale === 'bn' ? 'আসন্ন সম্মেলন' : 'Upcoming conferences'}</h2>
+              <button onClick={() => navigate('conferences')} className="text-sm text-primary hover:underline">{t('common.view')}</button>
             </div>
             <ul className="divide-y divide-border">
               {closingSoon.length === 0 && (
-                <li className="px-5 py-6 text-sm text-muted-foreground">{locale === 'bn' ? 'এখনো কোনো খোলা সুযোগ নেই।' : 'No open opportunities yet. Be the first to post one.'}</li>
+                <li className="px-5 py-6 text-sm text-muted-foreground">{locale === 'bn' ? 'এই মুহূর্তে কোনো আসন্ন সম্মেলন নেই।' : 'No upcoming conferences listed yet.'}</li>
               )}
-              {closingSoon.map(o => {
-                const days = o.deadline ? Math.ceil((new Date(o.deadline).getTime() - Date.now()) / 86400000) : null
+              {closingSoon.map(c => {
+                const days = Math.ceil((c.when - Date.now()) / 86400000)
+                const label = c.open
+                  ? (locale === 'bn' ? `জমা ${days} দিনে` : days <= 0 ? 'call closes today' : `call closes in ${days} days`)
+                  : (locale === 'bn' ? `${days} দিন পরে` : `in ${days} days`)
                 return (
-                  <li key={o.id}>
-                    <button onClick={() => navigate(`opportunities/${o.id}`)} className="w-full text-left px-5 py-4 hover:bg-muted/60 transition-colors grid grid-cols-[1fr_auto] gap-3">
+                  <li key={c.id}>
+                    <button onClick={() => navigate(`conferences/${c.id}`)} className="w-full text-left px-5 py-4 hover:bg-muted/60 transition-colors grid grid-cols-[1fr_auto] gap-3">
                       <span>
-                        <span className="block text-sm font-medium leading-snug line-clamp-2">{o.title}</span>
-                        <span className="block text-xs text-muted-foreground mt-1">{[o.organization, o.location].filter(Boolean).join(', ')}</span>
+                        <span className="block text-sm font-medium leading-snug line-clamp-2">{c.title}</span>
+                        <span className="block text-xs text-muted-foreground mt-1">{[c.location, new Date(c.eventDate).toLocaleDateString(locale === 'bn' ? 'bn-BD' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })].filter(Boolean).join(' · ')}</span>
                       </span>
-                      {days !== null && (
-                        <span className={`self-start text-xs font-medium rounded-md px-2 py-1 tabular-nums ${days <= 14 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-secondary-foreground'}`}>
-                          {days <= 0 ? (locale === 'bn' ? 'আজ' : 'today') : locale === 'bn' ? `${days} দিন` : `${days} days`}
-                        </span>
-                      )}
+                      <span className={`self-start text-xs font-medium rounded-md px-2 py-1 whitespace-nowrap ${c.open ? 'bg-accent text-accent-foreground' : 'bg-secondary text-secondary-foreground'}`}>{label}</span>
                     </button>
                   </li>
                 )

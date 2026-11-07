@@ -109,7 +109,7 @@ export const dictionaries = {
       light: 'Light',
       dark: 'Dark',
       system: 'System',
-      demo: 'Demo data',
+      demo: 'Check official source',
     },
     home: {
       heroTitle: 'The research ecosystem of Bangladesh',
@@ -558,7 +558,7 @@ export const dictionaries = {
       sections: 'Sections',
       legal: 'Legal',
       copyright: '© {year} Researcher BD. Bangladesh Research & Innovation Network.',
-      disclaimer: 'A demonstration platform. All records marked as demo data are fictional.',
+      disclaimer: 'Listings link to their official sources. Always confirm dates and requirements on the official website.',
     },
   },
   bn: {
@@ -663,7 +663,7 @@ export const dictionaries = {
       light: 'লাইট',
       dark: 'ডার্ক',
       system: 'সিস্টেম',
-      demo: 'ডেমো তথ্য',
+      demo: 'অফিসিয়াল উৎস যাচাই করুন',
     },
     home: {
       heroTitle: 'বাংলাদেশের গবেষণা ইকোসিস্টেম',
@@ -1112,7 +1112,7 @@ export const dictionaries = {
       sections: 'বিভাগ',
       legal: 'আইনি',
       copyright: '© {year} রিসার্চার বিডি। বাংলাদেশ গবেষণা ও উদ্ভাবন নেটওয়ার্ক।',
-      disclaimer: 'একটি ডেমনস্ট্রেশন প্ল্যাটফর্ম। ডেমো হিসেবে চিহ্নিত সব রেকর্ড কাল্পনিক।',
+      disclaimer: 'প্রতিটি তথ্যের সাথে অফিসিয়াল উৎসের লিংক দেওয়া আছে। আবেদনের আগে অফিসিয়াল ওয়েবসাইটে তারিখ ও শর্ত যাচাই করুন।',
     },
   },
 } as const

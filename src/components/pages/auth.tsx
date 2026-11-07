@@ -165,29 +165,6 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
         </CardContent>
       </Card>
 
-      {mode === 'login' && (
-        <div className="mt-6 rounded-xl border border-dashed border-border p-4">
-          <p className="text-sm font-medium">Try a demo account</p>
-          <p className="text-xs text-muted-foreground mt-1">Fictional sample users. Choose one to fill in the form.</p>
-          <div className="mt-3 grid gap-2">
-            {[
-              { name: 'Ayesha Rahman', role: 'Faculty', email: 'ayesha@demo.researcherbd.org' },
-              { name: 'Tanvir Hasan', role: 'Researcher', email: 'tanvir@demo.researcherbd.org' },
-              { name: 'Nusrat Jahan', role: 'Student', email: 'nusrat@demo.researcherbd.org' },
-            ].map(d => (
-              <button
-                key={d.email}
-                type="button"
-                onClick={() => setForm(f => ({ ...f, email: d.email, password: 'demo1234' }))}
-                className="flex items-center justify-between rounded-md border border-border bg-card px-3 py-2 text-left text-sm hover:border-primary/50"
-              >
-                <span>{d.name}</span>
-                <span className="text-xs text-muted-foreground">{d.role}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
