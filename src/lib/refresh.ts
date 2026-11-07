@@ -10,7 +10,7 @@
 // Every run is recorded in the audit log.
 import { db } from '@/lib/db'
 
-type Report = { doajAdded: number; doajUpdated: number; openalexUpdated: number; eventsClosed: number; errors: string[] }
+type Report = { doajAdded: number; doajUpdated: number; openalexUpdated: number; metricsUpdated: number; eventsClosed: number; errors: string[] }
 
 const norm = (s: string) => s.toLowerCase().replace(/^the\s+/, '').replace(/&/g, 'and').replace(/[^a-z0-9]+/g, ' ').trim()
 
@@ -114,10 +114,45 @@ async function enrichFromOpenAlex(report: Report) {
   }
 }
 
+// OpenAlex citation metrics (2-year mean citedness, h-index, works count) for journals with an ISSN.
+// Up to 100 journals per day, refreshing each roughly monthly.
+async function refreshOpenAlexMetrics(report: Report) {
+  const key = process.env.OPENALEX_API_KEY ? `&api_key=${encodeURIComponent(process.env.OPENALEX_API_KEY)}` : ''
+  const monthAgo = new Date(Date.now() - 30 * 86400000)
+  const todo = await db.journal.findMany({
+    where: { OR: [{ issn: { not: null } }, { eissn: { not: null } }], AND: [{ OR: [{ oaMetricsAt: null }, { oaMetricsAt: { lt: monthAgo } }] }] },
+    orderBy: [{ oaMetricsAt: { sort: 'asc', nulls: 'first' } }],
+    take: 100,
+    select: { id: true, issn: true, eissn: true },
+  })
+  for (let i = 0; i < todo.length; i += 50) {
+    const batch = todo.slice(i, i + 50)
+    const issns = [...new Set(batch.flatMap(j => [j.issn, j.eissn]).filter((x): x is string => !!x))]
+    const d = await getJson(`https://api.openalex.org/sources?filter=issn:${issns.join('|')}&per-page=100&select=issn,summary_stats,works_count${key}`)
+    type Src = { issn?: string[] | null; works_count?: number; summary_stats?: { '2yr_mean_citedness'?: number; h_index?: number } }
+    const byIssn = new Map<string, Src>()
+    for (const r of (d.results ?? []) as Src[]) for (const x of r.issn ?? []) byIssn.set(x, r)
+    const now = new Date()
+    for (const j of batch) {
+      const hit = (j.issn && byIssn.get(j.issn)) || (j.eissn && byIssn.get(j.eissn))
+      const data: Record<string, unknown> = { oaMetricsAt: now }
+      if (hit) {
+        const c = hit.summary_stats?.['2yr_mean_citedness']
+        if (typeof c === 'number') data.oaCitedness = Math.round(c * 1000) / 1000
+        if (typeof hit.summary_stats?.h_index === 'number') data.oaHIndex = hit.summary_stats.h_index
+        if (typeof hit.works_count === 'number') data.oaWorksCount = hit.works_count
+        report.metricsUpdated++
+      }
+      await db.journal.update({ where: { id: j.id }, data })
+    }
+  }
+}
+
 export async function runDailyRefresh(actorId: string | null = null): Promise<Report> {
-  const report: Report = { doajAdded: 0, doajUpdated: 0, openalexUpdated: 0, eventsClosed: 0, errors: [] }
+  const report: Report = { doajAdded: 0, doajUpdated: 0, openalexUpdated: 0, metricsUpdated: 0, eventsClosed: 0, errors: [] }
   try { await refreshFromDoaj(report) } catch (e) { report.errors.push(`doaj: ${(e as Error).message}`) }
   try { await enrichFromOpenAlex(report) } catch (e) { report.errors.push(`openalex: ${(e as Error).message}`) }
+  try { await refreshOpenAlexMetrics(report) } catch (e) { report.errors.push(`openalex metrics: ${(e as Error).message}`) }
   try {
     const r = await db.academicEvent.updateMany({
       where: { status: 'upcoming', startDateTime: { lt: new Date(Date.now() - 86400000) } },

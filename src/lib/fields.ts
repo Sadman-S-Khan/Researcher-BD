@@ -1,0 +1,32 @@
+// Research fields used by the journal "Field" filter. Names follow the 27 SCImago/Scopus subject
+// areas; `match` lists substrings searched (case-insensitively) in a journal's subjectAreas, so
+// journals imported from SCImago and hand-curated ones (BanglaJOL, international list) both match.
+export const FIELDS: { value: string; label: string; labelBn: string; match: string[] }[] = [
+  { value: 'agri', label: 'Agricultural and Biological Sciences', labelBn: 'কৃষি ও জীববিজ্ঞান', match: ['Agricultural and Biological', 'Agricultur', 'Biological sciences', 'Food', 'Fisheries', 'Aquaculture', 'Agronomy', 'Plant'] },
+  { value: 'arts', label: 'Arts and Humanities', labelBn: 'কলা ও মানবিক', match: ['Arts and Humanities', 'Humanities', 'History', 'Asian studies', 'Linguistic', 'Philosophy'] },
+  { value: 'biochem', label: 'Biochemistry, Genetics and Molecular Biology', labelBn: 'জৈবরসায়ন, জেনেটিক্স ও আণবিক জীববিজ্ঞান', match: ['Biochemistry', 'Genetic', 'Molecular', 'Cell and molecular', 'Biotechnology'] },
+  { value: 'business', label: 'Business, Management and Accounting', labelBn: 'ব্যবসা, ব্যবস্থাপনা ও হিসাববিজ্ঞান', match: ['Business', 'Management', 'Accounting'] },
+  { value: 'cheme', label: 'Chemical Engineering', labelBn: 'রাসায়নিক প্রকৌশল', match: ['Chemical Engineering'] },
+  { value: 'chem', label: 'Chemistry', labelBn: 'রসায়ন', match: ['Chemistry'] },
+  { value: 'cs', label: 'Computer Science', labelBn: 'কম্পিউটার বিজ্ঞান', match: ['Computer Science', 'Computing', 'Machine learning', 'Artificial intelligence', 'Data science', 'Computer vision', 'Natural language', 'Information retrieval', 'Pattern recognition', 'Neural networks'] },
+  { value: 'decision', label: 'Decision Sciences', labelBn: 'সিদ্ধান্ত বিজ্ঞান', match: ['Decision Sciences', 'Operations research'] },
+  { value: 'dentistry', label: 'Dentistry', labelBn: 'দন্তচিকিৎসা', match: ['Dentistry', 'Dental'] },
+  { value: 'earth', label: 'Earth and Planetary Sciences', labelBn: 'ভূ ও গ্রহ বিজ্ঞান', match: ['Earth and Planetary', 'Earth', 'Geoscience', 'Geology', 'Hydrology', 'Remote sensing'] },
+  { value: 'econ', label: 'Economics, Econometrics and Finance', labelBn: 'অর্থনীতি ও অর্থায়ন', match: ['Economics', 'Econometric', 'Finance', 'Development studies'] },
+  { value: 'energy', label: 'Energy', labelBn: 'জ্বালানি', match: ['Energy'] },
+  { value: 'eng', label: 'Engineering', labelBn: 'প্রকৌশল', match: ['Engineering', 'Robotics', 'Signal processing'] },
+  { value: 'env', label: 'Environmental Science', labelBn: 'পরিবেশ বিজ্ঞান', match: ['Environmental', 'Sustainab', 'Climate', 'Water'] },
+  { value: 'healthprof', label: 'Health Professions', labelBn: 'স্বাস্থ্য পেশা', match: ['Health Professions', 'Physical Therapy', 'Sports science'] },
+  { value: 'immuno', label: 'Immunology and Microbiology', labelBn: 'ইমিউনোলজি ও অণুজীববিজ্ঞান', match: ['Immunology', 'Microbiolog', 'Infectious'] },
+  { value: 'materials', label: 'Materials Science', labelBn: 'পদার্থ বিজ্ঞান (ম্যাটেরিয়ালস)', match: ['Materials'] },
+  { value: 'math', label: 'Mathematics', labelBn: 'গণিত ও পরিসংখ্যান', match: ['Mathematic', 'Statistic'] },
+  { value: 'medicine', label: 'Medicine', labelBn: 'চিকিৎসাবিজ্ঞান', match: ['Medicine', 'Medical', 'Public health', 'Global health', 'Health and society'] },
+  { value: 'multi', label: 'Multidisciplinary', labelBn: 'বহুবিষয়ক', match: ['Multidisciplinary'] },
+  { value: 'neuro', label: 'Neuroscience', labelBn: 'স্নায়ুবিজ্ঞান', match: ['Neuroscience'] },
+  { value: 'nursing', label: 'Nursing', labelBn: 'নার্সিং', match: ['Nursing'] },
+  { value: 'pharma', label: 'Pharmacology, Toxicology and Pharmaceutics', labelBn: 'ফার্মাকোলজি ও ফার্মেসি', match: ['Pharma', 'Toxicolog', 'Drug discovery'] },
+  { value: 'physics', label: 'Physics and Astronomy', labelBn: 'পদার্থবিজ্ঞান ও জ্যোতির্বিজ্ঞান', match: ['Physics', 'Astronomy'] },
+  { value: 'psych', label: 'Psychology', labelBn: 'মনোবিজ্ঞান', match: ['Psycholog', 'Behavioural'] },
+  { value: 'social', label: 'Social Sciences', labelBn: 'সামাজিক বিজ্ঞান', match: ['Social Sciences', 'Sociolog', 'Political', 'Education', 'Law', 'Library', 'Social sciences'] },
+  { value: 'vet', label: 'Veterinary', labelBn: 'ভেটেরিনারি', match: ['Veterinary', 'Animal'] },
+]

@@ -18,6 +18,7 @@ import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { useSession } from '@/lib/session-context'
+import { FIELDS } from '@/lib/fields'
 import {
   BookOpen, ExternalLink, Bookmark, BookmarkCheck, ArrowLeft, Building2,
   Globe, FileText, CheckCircle2, AlertCircle, Plus, Calendar, Tag, Link2,
@@ -28,8 +29,29 @@ export function JournalsPage({ id }: { id?: string }) {
   return <JournalList />
 }
 
+const quartileClass: Record<string, string> = {
+  Q1: 'bg-emerald-600 text-white', Q2: 'bg-lime-600 text-white', Q3: 'bg-amber-500 text-white', Q4: 'bg-orange-600 text-white',
+}
+
+function MetricBadges({ j, compact = false }: { j: any; compact?: boolean }) {
+  const items: string[] = []
+  if (j.sjrScore != null) items.push(`SJR ${j.sjrScore.toFixed(2)}`)
+  if (j.citeScore != null) items.push(`CiteScore ${j.citeScore.toFixed(1)}${j.citeScoreYear ? ` (${j.citeScoreYear})` : ''}`)
+  if (j.impactFactor != null) items.push(`IF ${j.impactFactor.toFixed(2)}${j.impactFactorYear ? ` (${j.impactFactorYear})` : ''}`)
+  if (!compact && j.hIndex != null) items.push(`H-index ${j.hIndex}`)
+  if (!j.sjrQuartile && items.length === 0 && !j.scopusIndexed) return null
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+      {j.sjrQuartile && <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${quartileClass[j.sjrQuartile] ?? 'bg-muted'}`}>{j.sjrQuartile}</span>}
+      {j.scopusIndexed && <span className="rounded border border-border px-1.5 py-0.5 text-[10px]">Scopus{j.metricsYear ? ` ${j.metricsYear}` : ''}</span>}
+      {items.map(x => <span key={x} className="rounded bg-secondary px-1.5 py-0.5 text-[10px] text-secondary-foreground tabular-nums">{x}</span>)}
+    </div>
+  )
+}
+
 function JournalList() {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
+  const bn = locale === 'bn'
   const { user } = useSession()
   const [open, setOpen] = useState(false)
   const [refresh, setRefresh] = useState(0)
@@ -47,6 +69,19 @@ function JournalList() {
         typeFilters={[
           { value: 'bd', label: 'Bangladesh' },
           { value: 'intl', label: 'International' },
+        ]}
+        extraFilters={[
+          { param: 'field', label: bn ? 'বিষয়' : 'Field', allLabel: bn ? 'সব বিষয়' : 'All fields', options: FIELDS.map(f => ({ value: f.value, label: bn ? f.labelBn : f.label })) },
+          { param: 'quartile', label: bn ? 'কোয়ার্টাইল' : 'Quartile', allLabel: bn ? 'যেকোনো কোয়ার্টাইল' : 'Any quartile', options: ['Q1', 'Q2', 'Q3', 'Q4'].map(q => ({ value: q, label: `${q} (SJR)` })) },
+          { param: 'indexed', label: bn ? 'ইনডেক্সিং' : 'Indexing', allLabel: bn ? 'সব জার্নাল' : 'All journals', options: [
+            { value: 'scopus', label: bn ? 'Scopus-এ ইনডেক্সড' : 'Scopus-indexed' },
+            { value: 'doaj', label: bn ? 'DOAJ-এ তালিকাভুক্ত' : 'Listed in DOAJ' },
+          ] },
+          { param: 'sort', label: bn ? 'সাজান' : 'Sort', defaultValue: 'title', options: [
+            { value: 'title', label: bn ? 'নাম (A–Z)' : 'Title A–Z' },
+            { value: 'sjr', label: bn ? 'SJR (বেশি থেকে কম)' : 'Highest SJR first' },
+            { value: 'if', label: bn ? 'ইমপ্যাক্ট ফ্যাক্টর (বেশি থেকে কম)' : 'Highest Impact Factor first' },
+          ] },
         ]}
         icon={BookOpen}
         action={user ? (
@@ -68,6 +103,7 @@ function JournalList() {
               {j.publisher && <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><Building2 className="h-3 w-3" /> {j.publisher}</p>}
               {j.subjectAreas && <p className="text-xs mt-1 line-clamp-1">{j.subjectAreas}</p>}
               {j.issn && <p className="text-xs text-muted-foreground mt-1">ISSN: {j.issn}</p>}
+              <MetricBadges j={j} compact />
               {j.website && (
                 <a href={j.website} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="inline-flex items-center gap-1 text-xs text-primary mt-2 hover:underline">
                   <ExternalLink className="h-3 w-3" /> {t('journals.website')}
@@ -147,6 +183,8 @@ function JournalDetail({ id }: { id: string }) {
             {j.lastCheckedAt && <Field label={t('journals.lastChecked')} value={formatDate(j.lastCheckedAt, locale)} icon={Calendar} />}
             <Field label={t('journals.reviewStatus')} value={j.verification.replace(/-/g, ' ')} />
           </div>
+
+          <JournalMetrics j={j} canEdit={user?.role === 'ADMIN' || user?.role === 'MODERATOR'} onSaved={(nj: any) => setData((d: any) => ({ ...d, journal: nj }))} />
 
           {j.indexingClaims && (
             <div className="pt-3 border-t border-border">
@@ -279,5 +317,81 @@ function SubmitJournalDialog({ onClose, onCreated }: { onClose: () => void; onCr
         </DialogFooter>
       </form>
     </DialogContent>
+  )
+}
+
+
+// Metrics block on the journal page, with sources and an admin editor.
+function JournalMetrics({ j, canEdit, onSaved }: { j: any; canEdit: boolean; onSaved: (j: any) => void }) {
+  const [editing, setEditing] = useState(false)
+  const [f, setF] = useState({
+    impactFactor: j.impactFactor ?? '', impactFactorYear: j.impactFactorYear ?? '',
+    citeScore: j.citeScore ?? '', citeScoreYear: j.citeScoreYear ?? '',
+    sjrQuartile: j.sjrQuartile ?? '', sjrScore: j.sjrScore ?? '', metricsYear: j.metricsYear ?? '',
+    metricsNote: j.metricsNote ?? '',
+  })
+  const n = (v: any) => (v === '' || v == null ? null : Number(v))
+  const save = async () => {
+    const res = await fetch(`/api/journals/${j.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        impactFactor: n(f.impactFactor), impactFactorYear: n(f.impactFactorYear),
+        citeScore: n(f.citeScore), citeScoreYear: n(f.citeScoreYear),
+        sjrQuartile: f.sjrQuartile || null, sjrScore: n(f.sjrScore), metricsYear: n(f.metricsYear),
+        metricsNote: f.metricsNote || null,
+      }),
+    })
+    const d = await res.json()
+    if (!res.ok) { toast.error(d.error || 'Could not save'); return }
+    onSaved(d.journal); setEditing(false); toast.success('Metrics saved')
+  }
+  const has = j.sjrQuartile || j.sjrScore != null || j.citeScore != null || j.impactFactor != null || j.hIndex != null || j.oaCitedness != null
+  if (!has && !canEdit) return null
+  const scimagoUrl = j.scimagoId ? `https://www.scimagojr.com/journalsearch.php?q=${j.scimagoId}&tip=sid` : null
+  return (
+    <div className="pt-3 border-t border-border">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-semibold">Journal metrics</h3>
+        {canEdit && <Button size="sm" variant="ghost" onClick={() => setEditing(e => !e)}>{editing ? 'Cancel' : 'Edit metrics'}</Button>}
+      </div>
+      {!editing ? (
+        <>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {j.sjrQuartile && <Field label={`SJR quartile${j.metricsYear ? ` (${j.metricsYear})` : ''}`} value={j.sjrQuartile} />}
+            {j.sjrScore != null && <Field label={`SJR${j.metricsYear ? ` (${j.metricsYear})` : ''}`} value={j.sjrScore.toFixed(3)} />}
+            {j.hIndex != null && <Field label="H-index (SCImago)" value={String(j.hIndex)} />}
+            {j.citeScore != null && <Field label={`CiteScore${j.citeScoreYear ? ` (${j.citeScoreYear})` : ''}`} value={j.citeScore.toFixed(1)} />}
+            {j.impactFactor != null && <Field label={`Impact Factor${j.impactFactorYear ? ` (${j.impactFactorYear})` : ''}`} value={j.impactFactor.toFixed(3)} />}
+            {j.oaCitedness != null && <Field label="2-year mean citedness (OpenAlex)" value={j.oaCitedness.toFixed(2)} />}
+            {j.oaHIndex != null && <Field label="H-index (OpenAlex)" value={String(j.oaHIndex)} />}
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">
+            Sources: quartile, SJR and H-index from {scimagoUrl ? <a className="text-primary underline" href={scimagoUrl} target="_blank" rel="noreferrer">SCImago Journal Rank</a> : 'SCImago Journal Rank'} (Scopus data).
+            CiteScore (Scopus) and Impact Factor (Clarivate Journal Citation Reports) are entered by moderators{j.metricsNote ? `: ${j.metricsNote}` : ''}.
+            OpenAlex citedness is a free open indicator and is not the official Impact Factor. Always confirm metrics with the official source.
+          </p>
+          {!has && <p className="text-xs text-muted-foreground">No metrics recorded yet.</p>}
+        </>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div><Label className="text-xs">Impact Factor</Label><Input type="number" step="0.001" value={f.impactFactor} onChange={e => setF({ ...f, impactFactor: e.target.value })} /></div>
+          <div><Label className="text-xs">Impact Factor year</Label><Input type="number" value={f.impactFactorYear} onChange={e => setF({ ...f, impactFactorYear: e.target.value })} /></div>
+          <div><Label className="text-xs">CiteScore</Label><Input type="number" step="0.1" value={f.citeScore} onChange={e => setF({ ...f, citeScore: e.target.value })} /></div>
+          <div><Label className="text-xs">CiteScore year</Label><Input type="number" value={f.citeScoreYear} onChange={e => setF({ ...f, citeScoreYear: e.target.value })} /></div>
+          <div><Label className="text-xs">SJR quartile</Label>
+            <Select value={f.sjrQuartile || 'none'} onValueChange={v => setF({ ...f, sjrQuartile: v === 'none' ? '' : v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Not set</SelectItem>
+                {['Q1', 'Q2', 'Q3', 'Q4'].map(q => <SelectItem key={q} value={q}>{q}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div><Label className="text-xs">SJR / metrics year</Label><Input type="number" value={f.metricsYear} onChange={e => setF({ ...f, metricsYear: e.target.value })} /></div>
+          <div className="sm:col-span-2"><Label className="text-xs">Source note (required for IF / CiteScore)</Label><Textarea rows={2} value={f.metricsNote} placeholder="e.g. JCR 2025 release; CiteScore from scopus.com/sourceid/…" onChange={e => setF({ ...f, metricsNote: e.target.value })} /></div>
+          <div className="sm:col-span-2"><Button size="sm" onClick={save} disabled={(f.impactFactor !== '' || f.citeScore !== '') && !f.metricsNote}>Save metrics</Button></div>
+        </div>
+      )}
+    </div>
   )
 }

@@ -268,6 +268,24 @@ model Journal {
   indexingClaims  String?  // free text — never assert without source
   openAccess      Boolean?
   verification    String   @default("listed") // listed | information-checked | under-review
+  country         String?
+  // Journal metrics. SJR/quartile/H-index come from an admin-imported SCImago file (Scopus data);
+  // CiteScore and Impact Factor are entered by admins with a year and source; oa* are OpenAlex figures.
+  scopusIndexed   Boolean?
+  scimagoId       String?
+  sjrScore        Float?
+  sjrQuartile     String?
+  hIndex          Int?
+  metricsYear     Int?
+  citeScore       Float?
+  citeScoreYear   Int?
+  impactFactor    Float?
+  impactFactorYear Int?
+  metricsNote     String?
+  oaCitedness     Float?
+  oaHIndex        Int?
+  oaWorksCount    Int?
+  oaMetricsAt     DateTime?
   verifiedById    String?
   verifiedBy      User?    @relation("JournalVerifiedBy", fields: [verifiedById], references: [id])
   lastCheckedAt   DateTime?

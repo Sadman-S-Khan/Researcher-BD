@@ -49,6 +49,7 @@ export function AdminPage() {
     <div className="container mx-auto px-4 py-8">
       <PageHeader title={t('admin.title')} subtitle={t('admin.subtitle')} />
       <RefreshPanel />
+      <ScimagoImportPanel />
       {loading ? <p className="text-sm text-muted-foreground">{t('common.loading')}</p> : (
         <>
           <div className="mb-6">
@@ -423,7 +424,7 @@ function RefreshPanel() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Update failed')
       const r = data.report
-      toast.success(`Update finished: ${r.doajAdded} journals added, ${r.doajUpdated + r.openalexUpdated} journals updated, ${r.eventsClosed} events closed${r.errors.length ? ` (${r.errors.length} source errors)` : ''}`)
+      toast.success(`Update finished: ${r.doajAdded} journals added, ${r.doajUpdated + r.openalexUpdated} journals updated, ${r.metricsUpdated} journal metrics refreshed, ${r.eventsClosed} events closed${r.errors.length ? ` (${r.errors.length} source errors)` : ''}`)
     } catch (e) {
       toast.error((e as Error).message)
     } finally {
@@ -435,9 +436,103 @@ function RefreshPanel() {
       <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
         <div>
           <p className="text-sm font-medium">Automatic updates</p>
-          <p className="text-xs text-muted-foreground mt-1">Runs every day at 03:00 (Dhaka): adds Bangladeshi journals from DOAJ, fills missing ISSNs from OpenAlex, and closes past events. Results appear in the audit log.</p>
+          <p className="text-xs text-muted-foreground mt-1">Runs every day at 03:00 (Dhaka): adds Bangladeshi journals from DOAJ, fills missing ISSNs and citation metrics from OpenAlex, and closes past events. Results appear in the audit log.</p>
         </div>
         <Button onClick={run} disabled={running} variant="outline" className="shrink-0">{running ? 'Updating…' : 'Run update now'}</Button>
+      </CardContent>
+    </Card>
+  )
+}
+
+
+// Parse a semicolon-separated SCImago CSV (quoted fields may contain ';').
+function parseScimagoCsv(text: string): string[][] {
+  const rows: string[][] = []
+  let row: string[] = [], field = '', quoted = false
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]
+    if (quoted) {
+      if (ch === '"') { if (text[i + 1] === '"') { field += '"'; i++ } else quoted = false }
+      else field += ch
+    } else if (ch === '"') quoted = true
+    else if (ch === ';') { row.push(field); field = '' }
+    else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && text[i + 1] === '\n') i++
+      row.push(field); field = ''
+      if (row.length > 1 || row[0]) rows.push(row)
+      row = []
+    } else field += ch
+  }
+  if (field || row.length) { row.push(field); rows.push(row) }
+  return rows
+}
+
+// Import the SCImago Journal Rank file: adds Scopus-indexed journals with quartile, SJR and H-index.
+function ScimagoImportPanel() {
+  const [year, setYear] = useState(new Date().getFullYear() - 1)
+  const [busy, setBusy] = useState(false)
+  const [progress, setProgress] = useState('')
+  const onFile = async (file: File) => {
+    setBusy(true); setProgress('Reading file…')
+    try {
+      const rows = parseScimagoCsv(await file.text())
+      const header = rows[0].map(h => h.trim().toLowerCase())
+      const col = (name: string) => header.findIndex(h => h === name.toLowerCase())
+      const c = { sid: col('Sourceid'), title: col('Title'), type: col('Type'), issn: col('Issn'), sjr: col('SJR'), q: col('SJR Best Quartile'), h: col('H index'), country: col('Country'), publisher: col('Publisher'), cats: col('Categories'), areas: col('Areas') }
+      if (c.sid < 0 || c.title < 0 || c.issn < 0) throw new Error('This does not look like a SCImago file (missing Sourceid/Title/Issn columns).')
+      const num = (v?: string) => { if (!v) return null; const n = parseFloat(v.includes(',') ? v.replace(/\./g, '').replace(',', '.') : v); return Number.isFinite(n) ? n : null }
+      const journals = rows.slice(1)
+        .filter(r => (c.type < 0 || (r[c.type] ?? '').trim().toLowerCase() === 'journal') && r[c.title])
+        .map(r => ({
+          sourceId: (r[c.sid] ?? '').trim(),
+          title: (r[c.title] ?? '').trim(),
+          issns: (r[c.issn] ?? '').split(',').map(x => x.trim()).filter(Boolean).slice(0, 4),
+          sjr: c.sjr >= 0 ? num(r[c.sjr]) : null,
+          quartile: c.q >= 0 && /^Q[1-4]$/.test((r[c.q] ?? '').trim()) ? (r[c.q].trim() as 'Q1') : null,
+          hIndex: c.h >= 0 ? (parseInt(r[c.h] ?? '', 10) || null) : null,
+          country: c.country >= 0 ? (r[c.country] ?? '').trim() || null : null,
+          publisher: c.publisher >= 0 ? (r[c.publisher] ?? '').trim().slice(0, 300) || null : null,
+          categories: c.cats >= 0 ? (r[c.cats] ?? '').trim().slice(0, 2000) || null : null,
+          areas: c.areas >= 0 ? (r[c.areas] ?? '').trim().slice(0, 1000) || null : null,
+        }))
+        .filter(j => j.sourceId && j.title)
+      let added = 0, updated = 0
+      const size = 1500
+      for (let i = 0; i < journals.length; i += size) {
+        setProgress(`Importing ${Math.min(i + size, journals.length).toLocaleString()} of ${journals.length.toLocaleString()} journals…`)
+        const res = await fetch('/api/admin/journal-import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ year, rows: journals.slice(i, i + size) }) })
+        const d = await res.json()
+        if (!res.ok) throw new Error(d.error || 'Import failed')
+        added += d.added; updated += d.updated
+      }
+      await fetch('/api/admin/journal-import', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ year, file: file.name, journals: journals.length, added, updated }) })
+      setProgress(`Done: ${added.toLocaleString()} journals added, ${updated.toLocaleString()} updated (SCImago ${year}).`)
+      toast.success('SCImago import finished')
+    } catch (e) {
+      setProgress('')
+      toast.error((e as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <Card className="mb-6">
+      <CardContent className="p-4 space-y-3">
+        <div>
+          <p className="text-sm font-medium">Import Scopus journals from SCImago</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Download the free journal list at <a className="text-primary underline" href="https://www.scimagojr.com/journalrank.php" target="_blank" rel="noreferrer">scimagojr.com/journalrank.php</a> (button &ldquo;Download data&rdquo;, CSV), then choose the file here.
+            Adds every journal in the file (all are Scopus-indexed) with quartile, SJR and H-index, and updates journals already listed. Re-import each year when SCImago publishes new rankings.
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
+          <div>
+            <Label htmlFor="sjr-year" className="text-xs">SCImago year</Label>
+            <Input id="sjr-year" type="number" className="w-28" value={year} onChange={e => setYear(parseInt(e.target.value, 10) || year)} />
+          </div>
+          <Input type="file" accept=".csv,text/csv" disabled={busy} onChange={e => { const f = e.target.files?.[0]; if (f) onFile(f) }} className="sm:max-w-sm" />
+        </div>
+        {progress && <p className="text-xs text-muted-foreground">{progress}</p>}
       </CardContent>
     </Card>
   )
