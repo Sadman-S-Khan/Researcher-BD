@@ -86,14 +86,17 @@ async function enrichFromOpenAlex(report: Report) {
     where: { issn: null, eissn: null },
     orderBy: [{ lastCheckedAt: { sort: 'asc', nulls: 'first' } }],
     take: 25,
-    select: { id: true, title: true, publisher: true, openAccess: true },
+    select: { id: true, title: true, publisher: true, openAccess: true, website: true, scope: true },
   })
   const now = new Date()
   for (const j of todo) {
     try {
-      const d = await getJson(`https://api.openalex.org/sources?search=${encodeURIComponent(j.title)}&per-page=5&select=display_name,issn_l,issn,host_organization_name,is_oa,type${key}${mailto}`)
-      type Src = { display_name: string; issn_l?: string | null; issn?: string[] | null; host_organization_name?: string | null; is_oa?: boolean; type?: string }
-      const hit = ((d.results ?? []) as Src[]).find(s => s.type === 'journal' && norm(s.display_name) === norm(j.title))
+      const d = await getJson(`https://api.openalex.org/sources?search=${encodeURIComponent(j.title)}&per-page=5&select=display_name,issn_l,issn,host_organization_name,is_oa,type,country_code${key}${mailto}`)
+      type Src = { display_name: string; issn_l?: string | null; issn?: string[] | null; host_organization_name?: string | null; is_oa?: boolean; type?: string; country_code?: string | null }
+      // Bangladeshi journals must also be attributed to Bangladesh, so a generic title
+      // (e.g. "Pulse", "Spectrum") never picks up a foreign journal's ISSN.
+      const isBd = (j.website ?? '').includes('banglajol.info') || (j.scope ?? '').includes('published in Bangladesh')
+      const hit = ((d.results ?? []) as Src[]).find(s => s.type === 'journal' && norm(s.display_name) === norm(j.title) && (!isBd || s.country_code === 'BD'))
       const data: Record<string, unknown> = { lastCheckedAt: now }
       if (hit?.issn_l) {
         data.issn = hit.issn_l
