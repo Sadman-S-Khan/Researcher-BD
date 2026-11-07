@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ci } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { z } from 'zod'
 
@@ -14,10 +14,10 @@ export async function GET(req: NextRequest) {
   const where: any = {}
   if (q) {
     where.OR = [
-      { title: { contains: q } },
-      { description: { contains: q } },
-      { organizer: { contains: q } },
-      { location: { contains: q } },
+      { title: ci(q) },
+      { description: ci(q) },
+      { organizer: ci(q) },
+      { location: ci(q) },
     ]
   }
   if (type && type !== 'all') where.eventType = type

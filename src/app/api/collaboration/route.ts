@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ci } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { z } from 'zod'
 
@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   const q = url.searchParams.get('q')?.trim()
   const where: any = { status: 'open' }
   if (q) {
-    where.OR = [{ title: { contains: q } }, { body: { contains: q } }, { researchArea: { contains: q } }]
+    where.OR = [{ title: ci(q) }, { body: ci(q) }, { researchArea: ci(q) }]
   }
   const items = await db.collaborationPost.findMany({
     where,

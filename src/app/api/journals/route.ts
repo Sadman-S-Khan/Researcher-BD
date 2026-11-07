@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ci } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { z } from 'zod'
 
@@ -14,13 +14,13 @@ export async function GET(req: NextRequest) {
   const where: any = {}
   if (q) {
     where.OR = [
-      { title: { contains: q } },
-      { publisher: { contains: q } },
-      { subjectAreas: { contains: q } },
-      { scope: { contains: q } },
+      { title: ci(q) },
+      { publisher: ci(q) },
+      { subjectAreas: ci(q) },
+      { scope: ci(q) },
     ]
   }
-  if (publisher && publisher !== 'all') where.publisher = { contains: publisher }
+  if (publisher && publisher !== 'all') where.publisher = ci(publisher)
   if (openAccess === 'true') where.openAccess = true
 
   const [items, total] = await Promise.all([

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ci } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { rateLimit, getClientId, rateLimitedResponse, RATE_LIMITS } from '@/lib/rate-limit'
 import { notifyMatchingUsers } from '@/lib/alerts'
@@ -16,14 +16,14 @@ export async function GET(req: NextRequest) {
   const where: any = {}
   if (q) {
     where.OR = [
-      { title: { contains: q } },
-      { description: { contains: q } },
-      { researchDomain: { contains: q } },
-      { hostingPlatform: { contains: q } },
+      { title: ci(q) },
+      { description: ci(q) },
+      { researchDomain: ci(q) },
+      { hostingPlatform: ci(q) },
     ]
   }
-  if (domain && domain !== 'all') where.researchDomain = { contains: domain }
-  if (modality && modality !== 'all') where.dataModality = { contains: modality }
+  if (domain && domain !== 'all') where.researchDomain = ci(domain)
+  if (modality && modality !== 'all') where.dataModality = ci(modality)
 
   const [items, total] = await Promise.all([
     db.dataset.findMany({ where, orderBy: { createdAt: 'desc' }, take: limit, skip: offset }),

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ci } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url)
@@ -9,10 +9,10 @@ export async function GET(req: NextRequest) {
   const where: any = {}
   if (q) {
     where.OR = [
-      { name: { contains: q } },
-      { description: { contains: q } },
-      { researchAreas: { contains: q } },
-      { location: { contains: q } },
+      { name: ci(q) },
+      { description: ci(q) },
+      { researchAreas: ci(q) },
+      { location: ci(q) },
     ]
   }
   const [items, total] = await Promise.all([

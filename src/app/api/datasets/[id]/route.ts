@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ci } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 
 export async function GET(
@@ -21,7 +21,7 @@ export async function GET(
 
   const related = await db.dataset.findMany({
     where: { id: { not: dataset.id }, OR: [
-      ...(dataset.researchDomain ? [{ researchDomain: { contains: dataset.researchDomain.split(',')[0]?.trim() ?? '' } }] : []),
+      ...(dataset.researchDomain ? [{ researchDomain: ci(dataset.researchDomain.split(',')[0]?.trim() ?? '') }] : []),
       ...(dataset.dataModality ? [{ dataModality: dataset.dataModality }] : []),
     ]},
     take: 4,

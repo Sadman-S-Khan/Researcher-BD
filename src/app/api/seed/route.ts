@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     // In production the database is seeded during the build (scripts/vercel-build.mjs).
     // At runtime, seeding only runs in development or when ALLOW_DEMO_SEED=true.
     const seedAllowed = process.env.NODE_ENV !== 'production' || process.env.ALLOW_DEMO_SEED === 'true'
-    if (seedAllowed) await seedDemoData(db, { adminPassword: process.env.SEED_ADMIN_PASSWORD || (process.env.NODE_ENV !== 'production' ? 'admin1234' : undefined) })
+    if (seedAllowed) await seedDemoData(db, { adminEmail: process.env.ADMIN_EMAIL || undefined, adminPassword: process.env.SEED_ADMIN_PASSWORD || (process.env.NODE_ENV !== 'production' ? 'admin1234' : undefined) })
     const counts = {
       users: await db.user.count(),
       opportunities: await db.opportunity.count(),

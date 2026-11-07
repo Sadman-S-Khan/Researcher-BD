@@ -30,11 +30,21 @@ function resolveDatabaseUrl(): string | undefined {
   return process.env.DATABASE_URL
 }
 
+const resolvedUrl = resolveDatabaseUrl()
+
 export const db =
   globalForPrisma.prisma ??
   new PrismaClient({
-    datasourceUrl: resolveDatabaseUrl(),
+    datasourceUrl: resolvedUrl,
     log: process.env.NODE_ENV === 'production' ? ['error'] : ['warn', 'error'],
   })
 
 globalForPrisma.prisma = db
+
+// Case-insensitive "contains" filter. SQLite LIKE is already case-insensitive for ASCII;
+// PostgreSQL needs mode: 'insensitive'. Typed loosely because the generated client differs by provider.
+const IS_POSTGRES = /^postgres(ql)?:\/\//.test(resolvedUrl ?? '')
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function ci(value: string): any {
+  return IS_POSTGRES ? { contains: value, mode: 'insensitive' } : { contains: value }
+}

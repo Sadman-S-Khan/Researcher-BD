@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ci } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url)
@@ -11,9 +11,9 @@ export async function GET(req: NextRequest) {
   const where: any = {}
   if (q) {
     where.OR = [
-      { title: { contains: q } },
-      { description: { contains: q } },
-      { funder: { contains: q } },
+      { title: ci(q) },
+      { description: ci(q) },
+      { funder: ci(q) },
     ]
   }
   if (type && type !== 'all') where.type = type

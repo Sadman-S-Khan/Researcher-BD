@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ci } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 
 // GET: list all users (admin only)
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   const where: any = {}
   if (q) {
-    where.OR = [{ name: { contains: q } }, { email: { contains: q } }]
+    where.OR = [{ name: ci(q) }, { email: ci(q) }]
   }
   if (role && role !== 'all') where.role = role
 

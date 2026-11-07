@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ci } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url)
@@ -13,16 +13,16 @@ export async function GET(req: NextRequest) {
     opportunities, journals, conferences, datasets, events,
     researchers, organizations, laboratories, lessons, questions,
   ] = await Promise.all([
-    db.opportunity.findMany({ where: { OR: [{ title: { contains: q } }, { description: { contains: q } }] }, take: limit, select: { id: true, title: true, type: true, organization: true } }),
-    db.journal.findMany({ where: { title: { contains: q } }, take: limit, select: { id: true, title: true, publisher: true } }),
-    db.conference.findMany({ where: { title: { contains: q } }, take: limit, select: { id: true, title: true, eventDate: true } }),
-    db.dataset.findMany({ where: { OR: [{ title: { contains: q } }, { description: { contains: q } }] }, take: limit, select: { id: true, title: true, researchDomain: true } }),
-    db.academicEvent.findMany({ where: { title: { contains: q } }, take: limit, select: { id: true, title: true, startDateTime: true } }),
-    db.user.findMany({ where: { name: { contains: q }, isBanned: false, isPublic: true, role: { in: ['RESEARCHER', 'FACULTY'] } }, take: limit, select: { id: true, name: true, role: true, profile: true } }),
-    db.organization.findMany({ where: { name: { contains: q } }, take: limit, select: { id: true, name: true, type: true } }),
-    db.laboratory.findMany({ where: { name: { contains: q } }, take: limit, select: { id: true, name: true, researchAreas: true } }),
-    db.lesson.findMany({ where: { OR: [{ titleEn: { contains: q } }, { titleBn: { contains: q } }] }, take: limit, select: { id: true, slug: true, titleEn: true, titleBn: true, category: true } }),
-    db.question.findMany({ where: { title: { contains: q } }, take: limit, select: { id: true, title: true, tags: true } }),
+    db.opportunity.findMany({ where: { OR: [{ title: ci(q) }, { description: ci(q) }] }, take: limit, select: { id: true, title: true, type: true, organization: true } }),
+    db.journal.findMany({ where: { title: ci(q) }, take: limit, select: { id: true, title: true, publisher: true } }),
+    db.conference.findMany({ where: { title: ci(q) }, take: limit, select: { id: true, title: true, eventDate: true } }),
+    db.dataset.findMany({ where: { OR: [{ title: ci(q) }, { description: ci(q) }] }, take: limit, select: { id: true, title: true, researchDomain: true } }),
+    db.academicEvent.findMany({ where: { title: ci(q) }, take: limit, select: { id: true, title: true, startDateTime: true } }),
+    db.user.findMany({ where: { name: ci(q), isBanned: false, isPublic: true, role: { in: ['RESEARCHER', 'FACULTY'] } }, take: limit, select: { id: true, name: true, role: true, profile: true } }),
+    db.organization.findMany({ where: { name: ci(q) }, take: limit, select: { id: true, name: true, type: true } }),
+    db.laboratory.findMany({ where: { name: ci(q) }, take: limit, select: { id: true, name: true, researchAreas: true } }),
+    db.lesson.findMany({ where: { OR: [{ titleEn: ci(q) }, { titleBn: ci(q) }] }, take: limit, select: { id: true, slug: true, titleEn: true, titleBn: true, category: true } }),
+    db.question.findMany({ where: { title: ci(q) }, take: limit, select: { id: true, title: true, tags: true } }),
   ])
 
   const results = [

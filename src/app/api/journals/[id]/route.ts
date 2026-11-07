@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ci } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 
 export async function GET(
@@ -31,7 +31,7 @@ export async function GET(
       id: { not: journal.id },
       OR: [
         ...(journal.publisher ? [{ publisher: journal.publisher }] : []),
-        ...(journal.subjectAreas ? [{ subjectAreas: { contains: journal.subjectAreas.split(',')[0]?.trim() ?? '' } }] : []),
+        ...(journal.subjectAreas ? [{ subjectAreas: ci(journal.subjectAreas.split(',')[0]?.trim() ?? '') }] : []),
       ],
     },
     take: 4,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ci } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { rateLimit, getClientId, rateLimitedResponse, RATE_LIMITS } from '@/lib/rate-limit'
 import { notifyMatchingUsers } from '@/lib/alerts'
@@ -18,15 +18,15 @@ export async function GET(req: NextRequest) {
   const where: any = {}
   if (q) {
     where.OR = [
-      { title: { contains: q } },
-      { description: { contains: q } },
-      { organization: { contains: q } },
-      { researchDomain: { contains: q } },
+      { title: ci(q) },
+      { description: ci(q) },
+      { organization: ci(q) },
+      { researchDomain: ci(q) },
     ]
   }
   if (type && type !== 'all') where.type = type
-  if (domain && domain !== 'all') where.researchDomain = { contains: domain }
-  if (location && location !== 'all') where.location = { contains: location }
+  if (domain && domain !== 'all') where.researchDomain = ci(domain)
+  if (location && location !== 'all') where.location = ci(location)
 
   const orderBy: any =
     sort === 'deadline'

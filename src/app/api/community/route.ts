@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ci } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { z } from 'zod'
 
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     where.category = { slug: cat }
   }
   if (q) {
-    where.OR = [{ title: { contains: q } }, { body: { contains: q } }, { tags: { contains: q } }]
+    where.OR = [{ title: ci(q) }, { body: ci(q) }, { tags: ci(q) }]
   }
 
   const [items, total] = await Promise.all([

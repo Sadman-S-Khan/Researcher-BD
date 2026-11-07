@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ci } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url)
@@ -16,16 +16,16 @@ export async function GET(req: NextRequest) {
 
   if (q) {
     where.OR = [
-      { name: { contains: q } },
-      { bio: { contains: q } },
-      { displayName: { contains: q } },
+      { name: ci(q) },
+      { bio: ci(q) },
+      { displayName: ci(q) },
     ]
   }
 
   let orCondition: any = {}
   if (interest && interest !== 'all') {
     orCondition = {
-      profile: { researchInterests: { contains: interest } },
+      profile: { researchInterests: ci(interest) },
     }
   }
 

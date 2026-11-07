@@ -366,12 +366,27 @@ const DEMO_QUESTIONS = [
   },
 ]
 
-export async function seedDemoData(db, { adminPassword, log = () => {} } = {}) {
-  const existingUsers = await db.user.count()
-  if (existingUsers === 0) {
+export async function seedDemoData(db, { adminPassword, adminEmail, log = () => {} } = {}) {
+  // Site administrator (real account). Created once; an existing account with this email is promoted to ADMIN.
+  if (adminEmail) {
+    const email = adminEmail.trim().toLowerCase()
+    const existing = await db.user.findUnique({ where: { email } })
+    if (existing) {
+      if (existing.role !== 'ADMIN') await db.user.update({ where: { email }, data: { role: 'ADMIN' } })
+    } else if (adminPassword) {
+      const admin = await db.user.create({ data: { email, name: 'Site Administrator', passwordHash: await bcrypt.hash(adminPassword, 10), role: 'ADMIN', isEmailVerified: true } })
+      await db.profile.create({ data: { userId: admin.id } })
+      log('Created admin account ' + email)
+    } else {
+      log('ADMIN_EMAIL set but no SEED_ADMIN_PASSWORD: register with that email, then redeploy to promote it')
+    }
+  }
+
+  const existingDemoUsers = await db.user.count({ where: { email: { endsWith: '@demo.researcherbd.org' } } })
+  if (existingDemoUsers === 0) {
     // Create demo users
     for (const u of DEMO_USERS) {
-      const pw = u.role === 'ADMIN' ? adminPassword : u.password
+      const pw = u.role === 'ADMIN' ? (adminEmail ? undefined : adminPassword) : u.password
       if (!pw) { log('Skipping demo admin: no admin password provided'); continue }
       const passwordHash = await bcrypt.hash(pw, 10)
       const user = await db.user.create({

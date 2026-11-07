@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ci } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
@@ -11,10 +11,10 @@ export async function GET(req: NextRequest) {
   if (cat && cat !== 'all') where.category = cat
   if (q) {
     where.OR = [
-      { titleEn: { contains: q } },
-      { titleBn: { contains: q } },
-      { bodyEn: { contains: q } },
-      { bodyBn: { contains: q } },
+      { titleEn: ci(q) },
+      { titleBn: ci(q) },
+      { bodyEn: ci(q) },
+      { bodyBn: ci(q) },
     ]
   }
 
