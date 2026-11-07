@@ -21,7 +21,8 @@ export function ConferencesPage({ id }: { id?: string }) {
 }
 
 function ConferencesList() {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
+  const bn = locale === 'bn'
   return (
     <ListPage
       title={t('conferences.title')}
@@ -33,6 +34,45 @@ function ConferencesList() {
         { value: 'bd', label: 'Bangladesh' },
         { value: 'intl', label: 'International' },
       ]}
+      extraFilters={bn ? [
+        { param: 'deadline', label: 'জমার শেষ তারিখ', allLabel: 'যেকোনো জমার তারিখ', options: [
+          { value: 'open', label: 'জমা চলছে' },
+          { value: '30', label: '৩০ দিনের মধ্যে শেষ' },
+          { value: '90', label: '৯০ দিনের মধ্যে শেষ' },
+          { value: 'passed', label: 'জমার সময় শেষ' },
+          { value: 'unknown', label: 'তারিখ ঘোষণা হয়নি' },
+        ] },
+        { param: 'when', label: 'সম্মেলনের তারিখ', allLabel: 'যেকোনো সম্মেলনের তারিখ', options: [
+          { value: '30', label: 'আগামী ৩০ দিন' },
+          { value: '90', label: 'আগামী ৩ মাস' },
+          { value: '180', label: 'আগামী ৬ মাস' },
+          { value: '365', label: 'আগামী ১২ মাস' },
+          { value: 'tbd', label: 'তারিখ ঘোষণা হয়নি' },
+        ] },
+        { param: 'sort', label: 'সাজান', defaultValue: 'date', options: [
+          { value: 'date', label: 'সম্মেলনের তারিখ অনুযায়ী' },
+          { value: 'deadline', label: 'জমার শেষ তারিখ অনুযায়ী' },
+        ] },
+      ] : [
+        { param: 'deadline', label: 'Submission deadline', allLabel: 'Any submission deadline', options: [
+          { value: 'open', label: 'Call for papers open' },
+          { value: '30', label: 'Closes within 30 days' },
+          { value: '90', label: 'Closes within 90 days' },
+          { value: 'passed', label: 'Submission closed' },
+          { value: 'unknown', label: 'Deadline not announced' },
+        ] },
+        { param: 'when', label: 'Conference date', allLabel: 'Any conference date', options: [
+          { value: '30', label: 'In the next 30 days' },
+          { value: '90', label: 'In the next 3 months' },
+          { value: '180', label: 'In the next 6 months' },
+          { value: '365', label: 'In the next 12 months' },
+          { value: 'tbd', label: 'Date not announced' },
+        ] },
+        { param: 'sort', label: 'Sort', defaultValue: 'date', options: [
+          { value: 'date', label: 'Sort by conference date' },
+          { value: 'deadline', label: 'Sort by submission deadline' },
+        ] },
+      ]}
       icon={UsersRound}
       renderItem={(c) => (
         <Card className="hover:shadow-md h-full">
@@ -42,6 +82,17 @@ function ConferencesList() {
             {c.organizer && <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><Building2 className="h-3 w-3" /> {c.organizer}</p>}
             {c.location && <p className="text-xs mt-1 flex items-center gap-1"><MapPin className="h-3 w-3" /> {c.location}</p>}
             {c.eventDate && <p className="text-xs mt-1 flex items-center gap-1"><Calendar className="h-3 w-3" /> {formatDate(c.eventDate, 'en')}</p>}
+            {c.submissionDeadline && (() => {
+              const open = new Date(c.submissionDeadline).getTime() >= Date.now() - 86400000
+              return (
+                <p className="text-xs mt-1 flex items-center gap-1">
+                  <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${open ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground'}`}>
+                    {open ? (bn ? 'জমা চলছে' : 'Call open') : (bn ? 'জমা বন্ধ' : 'Call closed')}
+                  </span>
+                  {bn ? 'জমার শেষ তারিখ' : 'Submission deadline'}: {formatDate(c.submissionDeadline, 'en')}
+                </p>
+              )
+            })()}
             {c.website && (
               <a href={c.website} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="inline-flex items-center gap-1 text-xs text-primary mt-2 hover:underline">
                 <ExternalLink className="h-3 w-3" /> {t('conferences.website')}

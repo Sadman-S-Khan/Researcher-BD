@@ -23,11 +23,13 @@ interface ListPageProps {
   icon?: any
   action?: ReactNode
   pageSize?: number
+  /** Additional dropdown filters, each sent as `param=value` (omitted when "all") */
+  extraFilters?: { param: string; label: string; allLabel?: string; options: TypeFilter[]; defaultValue?: string }[]
 }
 
 export function ListPage({
   title, subtitle, endpoint, typeFilters, typeParam = 'type',
-  renderItem, navigateBase, icon, action, pageSize = 12,
+  renderItem, navigateBase, icon, action, pageSize = 12, extraFilters,
 }: ListPageProps) {
   const { t } = useI18n()
   const { navigate } = useRouter()
@@ -37,6 +39,9 @@ export function ListPage({
   const [q, setQ] = useState('')
   const [type, setType] = useState('all')
   const [page, setPage] = useState(1)
+  const [extra, setExtra] = useState<Record<string, string>>(
+    () => Object.fromEntries((extraFilters ?? []).map(f => [f.param, f.defaultValue ?? 'all'])),
+  )
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
@@ -46,6 +51,7 @@ export function ListPage({
       const params = new URLSearchParams()
       if (q) params.set('q', q)
       if (type !== 'all' && typeFilters) params.set(typeParam, type)
+      for (const [k, v] of Object.entries(extra)) if (v && v !== 'all') params.set(k, v)
       params.set('limit', String(pageSize))
       params.set('offset', String((page - 1) * pageSize))
       const res = await fetch(`${endpoint}?${params}`, { cache: 'no-store' })
@@ -58,7 +64,7 @@ export function ListPage({
   useEffect(() => {
     setPage(1)
     load()
-  }, [type])
+  }, [type, extra])
 
   useEffect(() => {
     load()
@@ -87,17 +93,26 @@ export function ListPage({
     <div className="container mx-auto px-4 py-8">
       <PageHeader title={title} subtitle={subtitle} action={action} />
       <div className="mb-4"><DemoBanner /></div>
-      <div className="grid gap-2 sm:grid-cols-3 mb-6">
-        <Input placeholder={t('common.searchPlaceholder')} value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { setPage(1); load() } }} />
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 mb-6">
+        <Input className="sm:flex-1 sm:min-w-[220px]" placeholder={t('common.searchPlaceholder')} value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { setPage(1); load() } }} />
         {typeFilters && (
           <Select value={type} onValueChange={setType}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger className="sm:w-[180px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t('common.all')}</SelectItem>
               {typeFilters.map(tf => <SelectItem key={tf.value} value={tf.value}>{tf.label}</SelectItem>)}
             </SelectContent>
           </Select>
         )}
+        {(extraFilters ?? []).map(f => (
+          <Select key={f.param} value={extra[f.param] ?? 'all'} onValueChange={v => setExtra(e => ({ ...e, [f.param]: v }))}>
+            <SelectTrigger className="sm:w-[210px]" aria-label={f.label}><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {f.allLabel !== undefined && <SelectItem value="all">{f.allLabel}</SelectItem>}
+              {f.options.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        ))}
         <Button onClick={() => { setPage(1); load() }} variant="secondary">{t('common.filter')}</Button>
       </div>
 

@@ -14,7 +14,17 @@ function resolveDatabaseUrl(): string | undefined {
   const pg = [process.env.DATABASE_URL, process.env.POSTGRES_PRISMA_URL, process.env.POSTGRES_URL].find(
     (u) => u && /^postgres(ql)?:\/\//.test(u),
   )
-  if (pg) return pg
+  if (pg) {
+    // Neon/PgBouncer pooled connections: Prisma needs pgbouncer=true; allow time for Neon cold starts.
+    try {
+      const u = new URL(pg)
+      if (u.hostname.includes('-pooler') && !u.searchParams.has('pgbouncer')) u.searchParams.set('pgbouncer', 'true')
+      if (!u.searchParams.has('connect_timeout')) u.searchParams.set('connect_timeout', '15')
+      return u.toString()
+    } catch {
+      return pg
+    }
+  }
   if (process.env.VERCEL || process.env.NEXT_PUBLIC_DB_MODE === 'demo') {
     const target = '/tmp/researcher-bd.db'
     try {
