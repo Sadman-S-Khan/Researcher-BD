@@ -31,12 +31,12 @@ empty tables, so edits made through the site are never overwritten. Old `[Demo]`
 `@demo.researcherbd.org` users are removed automatically on deploy.
 
 ## Automatic updates
-- **Daily (Vercel Cron, 03:00 Dhaka)** — `/api/cron/daily`, authenticated with `CRON_SECRET`: adds Bangladeshi
-  open-access journals from DOAJ, fills missing ISSNs/publishers from OpenAlex (exact title match; Bangladeshi
+- **Daily (Vercel Cron, 03:00 Dhaka)** — `/api/cron/daily`, authenticated with `CRON_SECRET`: adds upcoming
+  conferences from the ccf-deadlines open dataset (international, CCF A/B or CORE A*/A) and conf.info.bd
+  (Bangladesh), adds Bangladeshi open-access journals from DOAJ, fills missing ISSNs/publishers from OpenAlex (exact title match; Bangladeshi
   journals must be attributed to Bangladesh), refreshes OpenAlex citation metrics for 100 journals/day, and closes
   past events. Admins can run it from the admin panel. Optional `OPENALEX_API_KEY` raises OpenAlex limits.
-- **Weekly (Claude scheduled task, Fridays)** — researches new conferences, fellowships and scholarships from
-  official sources and commits them to `src/lib/data/international.mjs` / `src/lib/seed-content.mjs`.
+- Fellowships and scholarships have no machine-readable source; admins add them through the site.
 
 ## Journal metrics and Scopus journals
 - **SCImago import (admin panel):** download the CSV from https://www.scimagojr.com/journalrank.php ("Download
