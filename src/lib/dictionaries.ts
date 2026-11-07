@@ -67,6 +67,7 @@ export const dictionaries = {
       terms: 'Terms of Service',
     },
     common: {
+      search: 'Search',
       loading: 'Loading…',
       noResults: 'No results found',
       error: 'Something went wrong',
@@ -620,6 +621,7 @@ export const dictionaries = {
       terms: 'ব্যবহারের শর্তাবলী',
     },
     common: {
+      search: 'খুঁজুন',
       loading: 'লোড হচ্ছে…',
       noResults: 'কোনো ফলাফল পাওয়া যায়নি',
       error: 'কিছু সমস্যা হয়েছে',

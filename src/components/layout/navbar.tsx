@@ -138,7 +138,7 @@ export function Navbar() {
         {/* Mobile menu */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Menu">
+            <Button variant="ghost" size="icon" className="xl:hidden" aria-label="Menu">
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
@@ -178,7 +178,7 @@ export function Navbar() {
 
         {/* Logo + Home button (clicking the logo navigates home) */}
         <button
-          className={`group flex items-center gap-2 mr-1 sm:mr-2 cursor-pointer rounded-lg px-1.5 py-1 transition-all hover:bg-accent/80 shrink-0 ${isActive('') ? 'bg-accent' : ''}`}
+          className={`group flex items-center gap-2 mr-1 sm:mr-2 cursor-pointer rounded-lg px-1.5 py-1 transition-all hover:bg-secondary shrink-0`}
           onClick={() => go('')}
           aria-label={t('brand.name') + ' — ' + t('nav.home')}
           title={t('nav.home')}
@@ -188,7 +188,7 @@ export function Navbar() {
         </button>
 
         {/* Desktop nav (Home is the logo, so we start with Discover) */}
-        <NavigationMenu className="hidden lg:flex min-w-0">
+        <NavigationMenu className="hidden xl:flex">
           <NavigationMenuList>
             {groups.map(group => (
               <NavigationMenuItem key={group.label}>
@@ -218,14 +218,6 @@ export function Navbar() {
                 </NavigationMenuContent>
               </NavigationMenuItem>
             ))}
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                className={navigationMenuTriggerStyle() + (isActive('integrity') ? ' bg-accent' : '')}
-                onClick={() => go('integrity')}
-              >
-                {t('nav.integrity')}
-              </NavigationMenuLink>
-            </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
 

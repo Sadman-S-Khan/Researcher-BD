@@ -46,7 +46,7 @@ export function LanguageToggle() {
           <span className="text-xs uppercase rounded border border-border px-1.5 py-0.5">
             {locale}
           </span>
-          <span className="hidden sm:inline">{t('common.language')}</span>
+          <span className="sr-only">{t('common.language')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
