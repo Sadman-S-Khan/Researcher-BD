@@ -1,0 +1,14 @@
+skills/
+node_modules/
+
+# local / build databases
+prisma/*.db
+prisma/*.db-journal
+public/uploads/
+.next/
+out/
+.env
+.env*.local
+*.log
+*.tsbuildinfo
+.vercel
