@@ -23,6 +23,7 @@ export async function GET(
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
   }
+  if (!researcher) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   // Get publications where this user is an author or has claimed
   const publications = await db.publication.findMany({

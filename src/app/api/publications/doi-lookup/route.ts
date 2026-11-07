@@ -194,7 +194,7 @@ export async function POST(req: NextRequest) {
   })
 
   // Optionally create an authorship claim
-  let claim = null
+  let claim: unknown = null
   if (claimAuthorship) {
     claim = await db.publicationClaim.create({
       data: { publicationId: pub.id, userId: user.id, status: 'pending', evidenceNote: 'Self-claim after DOI import' },

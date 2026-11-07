@@ -63,7 +63,7 @@ export async function PATCH(req: NextRequest) {
     if (target.role === 'ADMIN' && user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Cannot modify an admin' }, { status: 403 })
     }
-    const updated = await db.user.update({ where: { id: userId }, data: { role: value as string } })
+    const updated = await db.user.update({ where: { id: userId }, data: { role: value as 'STUDENT' | 'RESEARCHER' | 'FACULTY' | 'ORG_REP' | 'MODERATOR' | 'ADMIN' } })
     await db.auditLog.create({
       data: { actorId: user.id, action: 'change_role', targetType: 'user', targetId: userId, metadata: JSON.stringify({ from: target.role, to: value }) },
     })

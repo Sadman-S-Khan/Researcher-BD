@@ -309,6 +309,7 @@ model AcademicEvent {
   status          String   @default("upcoming") // upcoming | ongoing | ended
   submitterId     String?
   submitter       User?    @relation("EventSubmitter", fields: [submitterId], references: [id])
+  verification    String   @default("submitted")
   verifiedById    String?
   verifiedBy      User?    @relation("EventVerifiedBy", fields: [verifiedById], references: [id])
   createdAt       DateTime @default(now())
