@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useI18n } from '@/lib/i18n'
-import { dictionaries } from '@/lib/dictionaries'
 import { useNavigate } from '@/lib/router'
 import { useSession } from '@/lib/session-context'
 import { Button } from '@/components/ui/button'
@@ -19,7 +18,6 @@ import {
 export function HomePage() {
   const { t, locale } = useI18n()
   const [query, setQuery] = useState('')
-  const otherHeroTitle = (dictionaries as any)[locale === 'en' ? 'bn' : 'en']?.home?.heroTitle ?? ''
   const navigate = useNavigate()
   const { user } = useSession()
   const [stats, setStats] = useState({ opportunities: 0, researchers: 0, journals: 0, datasets: 0 })
@@ -96,9 +94,6 @@ export function HomePage() {
             <h1 className="mt-4 text-4xl sm:text-5xl lg:text-[3.6rem] leading-[1.05] text-foreground max-w-[18ch]">
               {t('home.heroTitle')}
             </h1>
-            <p lang={locale === 'en' ? 'bn' : 'en'} className="font-display mt-3 text-2xl sm:text-3xl text-shapla/90 leading-snug">
-              {otherHeroTitle}
-            </p>
             <div className="stitch-divider mt-7 w-40" aria-hidden="true" />
             <p className="mt-6 text-base sm:text-lg text-muted-foreground max-w-[60ch] leading-relaxed">
               {t('home.heroSubtitle')}
