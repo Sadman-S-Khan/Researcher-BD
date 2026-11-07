@@ -188,7 +188,7 @@ export function Navbar() {
         </button>
 
         {/* Desktop nav (Home is the logo, so we start with Discover) */}
-        <NavigationMenu className="hidden lg:flex">
+        <NavigationMenu className="hidden lg:flex min-w-0">
           <NavigationMenuList>
             {groups.map(group => (
               <NavigationMenuItem key={group.label}>
@@ -234,13 +234,13 @@ export function Navbar() {
           <Button
             variant="ghost"
             size="sm"
-            className="hidden md:flex gap-2 text-muted-foreground"
+            className="hidden xl:flex gap-2 text-muted-foreground"
             onClick={() => go('search')}
           >
             <Search className="h-4 w-4" />
-            <span className="text-sm">{t('common.searchPlaceholder')}</span>
+            <span className="text-sm">{t('common.search')}</span>
           </Button>
-          <Button variant="ghost" size="icon" className="hidden sm:inline-flex md:hidden" onClick={() => go('search')} aria-label="Search">
+          <Button variant="ghost" size="icon" className="hidden sm:inline-flex xl:hidden" onClick={() => go('search')} aria-label={t('common.search')}>
             <Search className="h-5 w-5" />
           </Button>
 
@@ -312,10 +312,10 @@ export function Navbar() {
             </DropdownMenu>
           ) : (
             <>
-              <Button variant="ghost" size="sm" onClick={() => go('login')} className="ml-1">
+              <Button variant="ghost" size="sm" onClick={() => go('login')} className="ml-1 shrink-0">
                 {t('nav.login')}
               </Button>
-              <Button size="sm" onClick={() => go('register')} className="hidden sm:inline-flex">
+              <Button size="sm" onClick={() => go('register')} className="hidden sm:inline-flex shrink-0">
                 {t('nav.register')}
               </Button>
             </>
