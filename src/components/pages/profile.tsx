@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useI18n } from '@/lib/i18n'
 import { useRouter, useNavigate } from '@/lib/router'
 import { PageHeader, VerificationBadge, formatDate } from '@/components/shared/ui-helpers'
@@ -18,7 +18,7 @@ import { Save, Download, Globe, Lock, ExternalLink, Search as SearchIcon, Link2,
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 export function ProfilePage() {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const navigate = useNavigate()
   const { user, refresh } = useSession()
   const [form, setForm] = useState<any>({})
@@ -116,6 +116,7 @@ export function ProfilePage() {
           <TabsTrigger value="contact">{t('profile.contactInfo')}</TabsTrigger>
           <TabsTrigger value="privacy">{t('profile.privacy')}</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="security">{locale === 'bn' ? 'পাসওয়ার্ড' : 'Password'}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="basic">
@@ -198,6 +199,10 @@ export function ProfilePage() {
 
         <TabsContent value="notifications">
           <NotificationsPreferencesTab />
+        </TabsContent>
+
+        <TabsContent value="security">
+          <ChangePasswordTab />
         </TabsContent>
       </Tabs>
 
@@ -507,5 +512,40 @@ function AvatarUploader({ currentAvatarUrl, name, onUploaded }: {
         </label>
       </div>
     </div>
+  )
+}
+
+
+function ChangePasswordTab() {
+  const [current, setCurrent] = useState('')
+  const [next, setNext] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [saving, setSaving] = useState(false)
+  const submit = async (e: FormEvent) => {
+    e.preventDefault()
+    if (next.length < 8) { toast.error('New password must be at least 8 characters'); return }
+    if (next !== confirm) { toast.error('The new passwords do not match'); return }
+    setSaving(true)
+    try {
+      const res = await fetch('/api/auth/password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword: current, newPassword: next }) })
+      const d = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(d.error || 'Could not change password')
+      toast.success('Password changed')
+      setCurrent(''); setNext(''); setConfirm('')
+    } catch (err) {
+      toast.error((err as Error).message)
+    } finally {
+      setSaving(false)
+    }
+  }
+  return (
+    <Card><CardContent className="p-4">
+      <form onSubmit={submit} className="space-y-3 max-w-sm">
+        <div><Label htmlFor="pw-current">Current password</Label><Input id="pw-current" type="password" autoComplete="current-password" value={current} onChange={e => setCurrent(e.target.value)} required /></div>
+        <div><Label htmlFor="pw-new">New password</Label><Input id="pw-new" type="password" autoComplete="new-password" value={next} onChange={e => setNext(e.target.value)} required minLength={8} /></div>
+        <div><Label htmlFor="pw-confirm">Confirm new password</Label><Input id="pw-confirm" type="password" autoComplete="new-password" value={confirm} onChange={e => setConfirm(e.target.value)} required /></div>
+        <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Change password'}</Button>
+      </form>
+    </CardContent></Card>
   )
 }
