@@ -6,11 +6,15 @@
 //  2. OpenAlex: fills missing ISSN, publisher and open-access status for journals already on the
 //     site (exact title match only). OpenAlex is NOT used to add journals, because its country
 //     attribution includes many doubtful titles.
-//  3. Events: marks events whose date has passed as "past".
+//  3. Conferences: new editions from ccf-deadlines (international, CS/AI, well-ranked series) and
+//     conf.info.bd (Bangladesh); see conference-feeds.ts.
+//  4. OpenAlex citation metrics for journals with an ISSN.
+//  5. Events: marks events whose date has passed as "past".
 // Every run is recorded in the audit log.
 import { db } from '@/lib/db'
+import { refreshInternationalConferences, refreshBangladeshConferences } from '@/lib/conference-feeds'
 
-type Report = { doajAdded: number; doajUpdated: number; openalexUpdated: number; metricsUpdated: number; eventsClosed: number; errors: string[] }
+type Report = { doajAdded: number; doajUpdated: number; openalexUpdated: number; metricsUpdated: number; conferencesAdded: number; conferencesUpdated: number; eventsClosed: number; errors: string[] }
 
 const norm = (s: string) => s.toLowerCase().replace(/^the\s+/, '').replace(/&/g, 'and').replace(/[^a-z0-9]+/g, ' ').trim()
 
@@ -149,9 +153,12 @@ async function refreshOpenAlexMetrics(report: Report) {
 }
 
 export async function runDailyRefresh(actorId: string | null = null): Promise<Report> {
-  const report: Report = { doajAdded: 0, doajUpdated: 0, openalexUpdated: 0, metricsUpdated: 0, eventsClosed: 0, errors: [] }
+  const report: Report = { doajAdded: 0, doajUpdated: 0, openalexUpdated: 0, metricsUpdated: 0, conferencesAdded: 0, conferencesUpdated: 0, eventsClosed: 0, errors: [] }
   try { await refreshFromDoaj(report) } catch (e) { report.errors.push(`doaj: ${(e as Error).message}`) }
   try { await enrichFromOpenAlex(report) } catch (e) { report.errors.push(`openalex: ${(e as Error).message}`) }
+  for (const [name, fn] of [['ccf-deadlines', refreshInternationalConferences], ['conf.info.bd', refreshBangladeshConferences]] as const) {
+    try { const r = await fn(); report.conferencesAdded += r.added; report.conferencesUpdated += r.updated } catch (e) { report.errors.push(`${name}: ${(e as Error).message}`) }
+  }
   try { await refreshOpenAlexMetrics(report) } catch (e) { report.errors.push(`openalex metrics: ${(e as Error).message}`) }
   try {
     const r = await db.academicEvent.updateMany({

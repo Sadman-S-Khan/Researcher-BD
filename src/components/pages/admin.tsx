@@ -424,7 +424,7 @@ function RefreshPanel() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Update failed')
       const r = data.report
-      toast.success(`Update finished: ${r.doajAdded} journals added, ${r.doajUpdated + r.openalexUpdated} journals updated, ${r.metricsUpdated} journal metrics refreshed, ${r.eventsClosed} events closed${r.errors.length ? ` (${r.errors.length} source errors)` : ''}`)
+      toast.success(`Update finished: ${r.doajAdded} journals added, ${r.doajUpdated + r.openalexUpdated} journals updated, ${r.metricsUpdated} journal metrics refreshed, ${r.conferencesAdded} conferences added, ${r.conferencesUpdated} updated, ${r.eventsClosed} events closed${r.errors.length ? ` (${r.errors.length} source errors)` : ''}`)
     } catch (e) {
       toast.error((e as Error).message)
     } finally {
@@ -436,7 +436,7 @@ function RefreshPanel() {
       <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
         <div>
           <p className="text-sm font-medium">Automatic updates</p>
-          <p className="text-xs text-muted-foreground mt-1">Runs every day at 03:00 (Dhaka): adds Bangladeshi journals from DOAJ, fills missing ISSNs and citation metrics from OpenAlex, and closes past events. Results appear in the audit log.</p>
+          <p className="text-xs text-muted-foreground mt-1">Runs every day at 03:00 (Dhaka): adds new conferences (Bangladesh: conf.info.bd; international: ccf-deadlines), adds Bangladeshi journals from DOAJ, fills missing ISSNs and citation metrics from OpenAlex, and closes past events. Results appear in the audit log.</p>
         </div>
         <Button onClick={run} disabled={running} variant="outline" className="shrink-0">{running ? 'Updating…' : 'Run update now'}</Button>
       </CardContent>
