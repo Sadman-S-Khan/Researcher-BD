@@ -51,7 +51,7 @@ function ConferencesList() {
         ] },
         { param: 'sort', label: 'সাজান', defaultValue: 'date', options: [
           { value: 'date', label: 'সম্মেলনের তারিখ অনুযায়ী' },
-          { value: 'deadline', label: 'জমার শেষ তারিখ অনুযায়ী' },
+          { value: 'deadline', label: 'খোলা কল, শেষ তারিখ আগে' },
         ] },
       ] : [
         { param: 'deadline', label: 'Submission deadline', allLabel: 'Any submission deadline', options: [
@@ -70,7 +70,7 @@ function ConferencesList() {
         ] },
         { param: 'sort', label: 'Sort', defaultValue: 'date', options: [
           { value: 'date', label: 'Sort by conference date' },
-          { value: 'deadline', label: 'Sort by submission deadline' },
+          { value: 'deadline', label: 'Open calls, closing soonest' },
         ] },
       ]}
       icon={UsersRound}

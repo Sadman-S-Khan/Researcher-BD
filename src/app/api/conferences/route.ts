@@ -37,6 +37,8 @@ export async function GET(req: NextRequest) {
   if (when && ['30', '90', '180', '365'].includes(when)) and.push({ eventDate: { gte: today, lte: inDays(Number(when)) } })
   else if (when === 'tbd') and.push({ eventDate: null })
 
+  // Sorting by deadline lists open calls only, soonest first
+  if (url.searchParams.get('sort') === 'deadline' && !deadline) and.push({ submissionDeadline: { gte: today } })
   const region = url.searchParams.get('region')
   if (region === 'bd') and.push({ location: { contains: 'Bangladesh' } })
   if (region === 'intl') and.push({ NOT: { location: { contains: 'Bangladesh' } } })
