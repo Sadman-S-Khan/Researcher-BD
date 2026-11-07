@@ -48,6 +48,7 @@ export function AdminPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <PageHeader title={t('admin.title')} subtitle={t('admin.subtitle')} />
+      <RefreshPanel />
       {loading ? <p className="text-sm text-muted-foreground">{t('common.loading')}</p> : (
         <>
           <div className="mb-6">
@@ -406,6 +407,37 @@ function AuditLogView() {
             ))}
           </div>
         )}
+      </CardContent>
+    </Card>
+  )
+}
+
+
+// Automatic content updates: runs daily via Vercel Cron; admins can also run it on demand.
+function RefreshPanel() {
+  const [running, setRunning] = useState(false)
+  const run = async () => {
+    setRunning(true)
+    try {
+      const res = await fetch('/api/cron/daily', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Update failed')
+      const r = data.report
+      toast.success(`Update finished: ${r.doajAdded} journals added, ${r.doajUpdated + r.openalexUpdated} journals updated, ${r.eventsClosed} events closed${r.errors.length ? ` (${r.errors.length} source errors)` : ''}`)
+    } catch (e) {
+      toast.error((e as Error).message)
+    } finally {
+      setRunning(false)
+    }
+  }
+  return (
+    <Card className="mb-6">
+      <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+        <div>
+          <p className="text-sm font-medium">Automatic updates</p>
+          <p className="text-xs text-muted-foreground mt-1">Runs every day at 03:00 (Dhaka): adds Bangladeshi journals from DOAJ, fills missing ISSNs from OpenAlex, and closes past events. Results appear in the audit log.</p>
+        </div>
+        <Button onClick={run} disabled={running} variant="outline" className="shrink-0">{running ? 'Updating…' : 'Run update now'}</Button>
       </CardContent>
     </Card>
   )

@@ -133,7 +133,7 @@ export function Navbar() {
   ]
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/60 glass-strong overflow-x-hidden">
+    <header className="sticky top-0 z-50 w-full border-b border-border/60 glass-strong">
       <div className="container mx-auto flex h-16 items-center gap-1 sm:gap-2 px-3 sm:px-4">
         {/* Mobile menu */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -201,7 +201,7 @@ export function Navbar() {
                         <li key={item.path}>
                           <button
                             onClick={() => go(item.path)}
-                            className="flex w-full items-start gap-3 rounded-md p-3 text-left hover:bg-accent transition-colors"
+                            className="flex w-full items-start gap-3 rounded-md p-3 text-left hover:bg-secondary transition-colors"
                           >
                             <Icon className="mt-0.5 h-4 w-4 text-primary shrink-0" />
                             <div className="flex-1">

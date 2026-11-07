@@ -15,6 +15,10 @@ export async function GET(req: NextRequest) {
       { researchTracks: ci(q) },
     ]
   }
+  // Hide conferences that have already happened unless ?past=1
+  if (url.searchParams.get('past') !== '1') {
+    where.AND = [{ OR: [{ eventDate: null }, { eventDate: { gte: new Date(Date.now() - 86400000) } }] }]
+  }
   const region = url.searchParams.get('region')
   if (region === 'bd') where.location = { contains: 'Bangladesh' }
   if (region === 'intl') where.NOT = { location: { contains: 'Bangladesh' } }
