@@ -7,7 +7,7 @@ import { db } from './db'
 const SESSION_COOKIE = 'rbd_session'
 const DEV_FALLBACK_SECRET = 'dev-only-secret-change-in-production-please-use-32-chars'
 const SECRET = process.env.AUTH_SECRET || DEV_FALLBACK_SECRET
-if (process.env.NODE_ENV === 'production' && (!process.env.AUTH_SECRET || process.env.AUTH_SECRET.length < 32)) {
+if (process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE !== 'phase-production-build' && (!process.env.AUTH_SECRET || process.env.AUTH_SECRET.length < 32)) {
   // Refuse to run with a guessable signing key in production: anyone could forge admin sessions.
   throw new Error('AUTH_SECRET must be set to a random string of at least 32 characters in production')
 }
