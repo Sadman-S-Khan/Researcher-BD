@@ -64,7 +64,6 @@ function QuestionList() {
           </Dialog>
         )}
       />
-      <div className="mb-4"><DemoBanner /></div>
 
       <div className="flex flex-wrap gap-2 mb-6">
         <Button variant={cat === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setCat('all')}>{t('common.all')}</Button>

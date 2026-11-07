@@ -46,7 +46,6 @@ function ResearchersList() {
   return (
     <div className="container mx-auto px-4 py-8">
       <PageHeader title={t('researchers.title')} subtitle={t('researchers.subtitle')} />
-      <div className="mb-4"><DemoBanner /></div>
       <div className="relative mb-6 max-w-md">
         <input
           className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm pl-10"

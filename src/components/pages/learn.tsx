@@ -55,7 +55,6 @@ export function LearnPage({ slug }: { slug: string }) {
   return (
     <div className="container mx-auto px-4 py-8">
       <PageHeader title={t('learn.title')} subtitle={t('learn.subtitle')} />
-      <div className="mb-4"><DemoBanner /></div>
 
       {user && (
         <Card className="mb-6">

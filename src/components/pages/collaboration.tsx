@@ -51,7 +51,6 @@ export function CollaborationPage() {
           </Dialog>
         )}
       />
-      <div className="mb-4"><DemoBanner /></div>
       <Input placeholder={t('common.searchPlaceholder')} value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && load()} className="mb-4 max-w-md" />
       {loading ? <p className="text-sm text-muted-foreground">{t('common.loading')}</p> :
         items.length === 0 ? <EmptyState title={t('common.noResults')} icon={Lightbulb} /> :

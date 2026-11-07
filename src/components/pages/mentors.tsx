@@ -35,7 +35,6 @@ export function MentorsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <PageHeader title={t('mentors.title')} subtitle={t('mentors.subtitle')} />
-      <div className="mb-4"><DemoBanner /></div>
       <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-200 mb-6">
         <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
         <span>{t('mentors.disclaimer')}</span>
