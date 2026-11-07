@@ -30,6 +30,24 @@ Starter content (conferences, journals, funding, scholarships, institutions, dat
 empty tables, so edits made through the site are never overwritten. Old `[Demo]` records and
 `@demo.researcherbd.org` users are removed automatically on deploy.
 
+## Automatic updates
+- **Daily (Vercel Cron, 03:00 Dhaka)** — `/api/cron/daily`, authenticated with `CRON_SECRET`: adds Bangladeshi
+  open-access journals from DOAJ, fills missing ISSNs/publishers from OpenAlex (exact title match; Bangladeshi
+  journals must be attributed to Bangladesh), refreshes OpenAlex citation metrics for 100 journals/day, and closes
+  past events. Admins can run it from the admin panel. Optional `OPENALEX_API_KEY` raises OpenAlex limits.
+- **Weekly (Claude scheduled task, Fridays)** — researches new conferences, fellowships and scholarships from
+  official sources and commits them to `src/lib/data/international.mjs` / `src/lib/seed-content.mjs`.
+
+## Journal metrics and Scopus journals
+- **SCImago import (admin panel):** download the CSV from https://www.scimagojr.com/journalrank.php ("Download
+  data") and upload it. Every journal in the file is Scopus-indexed; the import adds missing journals and updates
+  quartile, SJR, H-index, subject areas and the Scopus flag (with the SCImago year as evidence). Re-import yearly.
+  SCImago blocks automated downloads, so this step is manual.
+- **CiteScore / Impact Factor:** proprietary (Elsevier / Clarivate). Moderators enter them on the journal page with
+  the year and a source note; they are never fetched or guessed.
+- **Filters:** Journals can be filtered by region, field (27 Scopus subject areas), quartile and indexing, and
+  sorted by SJR or Impact Factor. Conferences can be filtered by submission deadline and conference date.
+
 ## Local development
 ```bash
 npm install
