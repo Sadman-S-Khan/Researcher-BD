@@ -15,6 +15,9 @@ export async function GET(req: NextRequest) {
       { researchTracks: ci(q) },
     ]
   }
+  const region = url.searchParams.get('region')
+  if (region === 'bd') where.location = { contains: 'Bangladesh' }
+  if (region === 'intl') where.NOT = { location: { contains: 'Bangladesh' } }
   const [items, total] = await Promise.all([
     db.conference.findMany({ where, orderBy: [{ eventDate: { sort: 'asc', nulls: 'last' } }, { title: 'asc' }], take: limit, skip: offset }),
     db.conference.count({ where }),

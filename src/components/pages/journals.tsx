@@ -43,6 +43,11 @@ function JournalList() {
         subtitle={t('journals.subtitle')}
         endpoint="/api/journals"
         navigateBase="journals"
+        typeParam="region"
+        typeFilters={[
+          { value: 'bd', label: 'Bangladesh' },
+          { value: 'intl', label: 'International' },
+        ]}
         icon={BookOpen}
         action={user ? (
           <Dialog open={open} onOpenChange={setOpen}>

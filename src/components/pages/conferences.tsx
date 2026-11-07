@@ -28,6 +28,11 @@ function ConferencesList() {
       subtitle={t('conferences.subtitle')}
       endpoint="/api/conferences"
       navigateBase="conferences"
+      typeParam="region"
+      typeFilters={[
+        { value: 'bd', label: 'Bangladesh' },
+        { value: 'intl', label: 'International' },
+      ]}
       icon={UsersRound}
       renderItem={(c) => (
         <Card className="hover:shadow-md h-full">

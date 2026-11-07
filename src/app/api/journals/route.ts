@@ -22,6 +22,9 @@ export async function GET(req: NextRequest) {
   }
   if (publisher && publisher !== 'all') where.publisher = ci(publisher)
   if (openAccess === 'true') where.openAccess = true
+  const region = url.searchParams.get('region')
+  if (region === 'bd') where.website = { contains: 'banglajol.info' }
+  if (region === 'intl') where.NOT = { website: { contains: 'banglajol.info' } }
 
   const [items, total] = await Promise.all([
     db.journal.findMany({ where, orderBy: { title: 'asc' }, take: limit, skip: offset }),
