@@ -37,7 +37,7 @@ const CORE_CONFERENCES = [
   {
     title: '7th International Conference on Electrical Engineering and Information & Communication Technology (ICEEICT 2027)',
     organizer: 'Department of EECE, Military Institute of Science and Technology (MIST)',
-    location: 'MIST, Mirpur Cantonment, Dhaka (hybrid)',
+    location: 'MIST, Mirpur Cantonment, Dhaka, Bangladesh (hybrid)',
     eventDate: new Date('2027-01-28'),
     submissionDeadline: new Date('2026-11-10'),
     website: 'https://iceeict.mist.ac.bd/',

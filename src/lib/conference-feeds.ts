@@ -131,8 +131,10 @@ export async function refreshBangladeshConferences() {
     const venue = strip(cells[3]); const city = strip(cells[4])
     const link = cells[5].match(/href="([^"]+)"/)?.[1] ?? null
     const location = [venue, city].filter(Boolean).join(', ')
+    // Key on the acronym (first word, ignoring a leading "IEEE") + year, e.g. "IEOM Conference 2026" -> ieom2026
+    const acronym = ym[1].replace(/^IEEE\s+/i, '').split(/\s+/)[0]
     items.push({
-      key: keyOf(ym[1], ym[2]),
+      key: keyOf(acronym, ym[2]),
       title: name,
       eventDate, submissionDeadline,
       location: /bangladesh/i.test(location) ? location : `${location}, Bangladesh`,
