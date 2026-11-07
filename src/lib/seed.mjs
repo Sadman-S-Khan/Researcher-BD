@@ -62,7 +62,8 @@ async function ensureAdmin(db, { adminEmail, adminPassword, log }) {
 async function addMissing(model, rows, log, name, key = 'title') {
   const existing = new Set((await model.findMany({ select: { [key]: true } })).map(r => r[key]))
   const missing = rows.filter(r => !existing.has(r[key]))
-  for (const data of missing) await model.create({ data })
+  // Batched insert (one round trip per 500 rows) so builds stay fast against a remote database
+  for (let i = 0; i < missing.length; i += 500) await model.createMany({ data: missing.slice(i, i + 500) })
   if (missing.length) log(`added ${missing.length} ${name}`)
 }
 
