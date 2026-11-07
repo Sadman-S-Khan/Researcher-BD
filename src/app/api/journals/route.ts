@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   if (openAccess === 'true') where.openAccess = true
 
   const [items, total] = await Promise.all([
-    db.journal.findMany({ where, orderBy: { createdAt: 'desc' }, take: limit, skip: offset }),
+    db.journal.findMany({ where, orderBy: { title: 'asc' }, take: limit, skip: offset }),
     db.journal.count({ where }),
   ])
   return NextResponse.json({ items, total, limit, offset })

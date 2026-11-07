@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     ]
   }
   const [items, total] = await Promise.all([
-    db.conference.findMany({ where, orderBy: { eventDate: 'asc' }, take: limit, skip: offset }),
+    db.conference.findMany({ where, orderBy: [{ eventDate: { sort: 'asc', nulls: 'last' } }, { title: 'asc' }], take: limit, skip: offset }),
     db.conference.count({ where }),
   ])
   return NextResponse.json({ items, total, limit, offset })

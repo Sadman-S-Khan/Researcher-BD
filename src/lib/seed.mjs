@@ -57,6 +57,15 @@ async function ensureAdmin(db, { adminEmail, adminPassword, log }) {
   return admin
 }
 
+// Insert rows whose key (title/name) is not in the table yet. Existing rows are never modified,
+// so moderator edits survive and new starter content still appears on later deploys.
+async function addMissing(model, rows, log, name, key = 'title') {
+  const existing = new Set((await model.findMany({ select: { [key]: true } })).map(r => r[key]))
+  const missing = rows.filter(r => !existing.has(r[key]))
+  for (const data of missing) await model.create({ data })
+  if (missing.length) log(`added ${missing.length} ${name}`)
+}
+
 async function fillIfEmpty(model, rows, log, name) {
   if ((await model.count()) > 0) return
   for (const data of rows) await model.create({ data })
@@ -67,15 +76,15 @@ export async function seedDemoData(db, { adminPassword, adminEmail, log = () => 
   await purgeDemoContent(db, log)
   const admin = await ensureAdmin(db, { adminEmail, adminPassword, log })
 
-  await fillIfEmpty(db.conference, CONFERENCES.map(c => ({ ...c, lastCheckedAt: CHECKED_AT })), log, 'conferences')
-  await fillIfEmpty(db.journal, JOURNALS.map(j => ({ ...j, lastCheckedAt: CHECKED_AT })), log, 'journals')
-  await fillIfEmpty(db.fundingCall, FUNDING, log, 'funding calls')
-  await fillIfEmpty(db.opportunity, OPPORTUNITIES, log, 'opportunities')
-  await fillIfEmpty(db.dataset, DATASETS, log, 'datasets')
-  await fillIfEmpty(db.academicEvent, EVENTS, log, 'events')
+  await addMissing(db.conference, CONFERENCES.map(c => ({ ...c, lastCheckedAt: CHECKED_AT })), log, 'conferences')
+  await addMissing(db.journal, JOURNALS.map(j => ({ ...j, lastCheckedAt: CHECKED_AT })), log, 'journals')
+  await addMissing(db.fundingCall, FUNDING, log, 'funding calls')
+  await addMissing(db.opportunity, OPPORTUNITIES, log, 'opportunities')
+  await addMissing(db.dataset, DATASETS, log, 'datasets')
+  await addMissing(db.academicEvent, EVENTS, log, 'events')
 
   if (admin) {
-    await fillIfEmpty(db.organization, ORGANIZATIONS.map(o => ({ ...o, ownerId: admin.id })), log, 'organizations')
+    await addMissing(db.organization, ORGANIZATIONS.map(o => ({ ...o, ownerId: admin.id })), log, 'organizations', 'name')
   }
 
   await fillIfEmpty(db.discussionCategory, DISCUSSION_CATEGORIES, log, 'discussion categories')

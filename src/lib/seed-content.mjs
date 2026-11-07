@@ -4,9 +4,12 @@
 // official page was read, "listed" when only the listing was confirmed). Where a date could not be
 // confirmed it is left empty and the description says to check the official circular.
 
+import { BANGLAJOL } from './data/banglajol.mjs'
+import { INTERNATIONAL_JOURNALS, BD_CONFERENCES, INTL_CONFERENCES } from './data/international.mjs'
+
 export const CHECKED_AT = new Date('2026-11-07T00:00:00Z')
 
-export const CONFERENCES = [
+const CORE_CONFERENCES = [
   {
     title: '29th International Conference on Computer and Information Technology (ICCIT 2026)',
     organizer: 'IEEE Bangladesh Section',
@@ -69,7 +72,7 @@ export const CONFERENCES = [
   },
 ]
 
-export const JOURNALS = [
+const CORE_JOURNALS = [
   { title: 'Dhaka University Journal of Science', issn: '1022-2502', eissn: '2408-8528', publisher: 'Faculty of Science, University of Dhaka', subjectAreas: 'Physical sciences, mathematics, chemistry, biological sciences', scope: 'Peer-reviewed research across the natural and mathematical sciences.', website: 'https://www.banglajol.info/index.php/DUJS' },
   { title: 'Journal of the Bangladesh Academy of Sciences', publisher: 'Bangladesh Academy of Sciences', subjectAreas: 'Multidisciplinary science', scope: 'Original research in physical, biological, agricultural and medical sciences.', website: 'https://www.banglajol.info/index.php/JBAS' },
   { title: 'Bangladesh Journal of Medical Science', subjectAreas: 'Medicine, public health, biomedical science', scope: 'Clinical and basic medical research, reviews and case reports.', website: 'https://www.banglajol.info/index.php/BJMS' },
@@ -81,6 +84,17 @@ export const JOURNALS = [
   { title: 'Dhaka University Journal of Applied Science and Engineering', publisher: 'University of Dhaka', subjectAreas: 'Engineering, applied physics, computer science', scope: 'Applied science and engineering research.', website: 'https://www.banglajol.info/index.php/DUJASE' },
   { title: 'Journal of Scientific Research', subjectAreas: 'Physics, chemistry, mathematics, biological sciences', scope: 'Peer-reviewed research in the physical and life sciences.', website: 'https://www.banglajol.info/index.php/JSR' },
 ].map(j => ({ ...j, openAccess: null, verification: 'listed', indexingClaims: null }))
+
+const coreUrls = new Set(CORE_JOURNALS.map(j => j.website))
+export const JOURNALS = [
+  ...CORE_JOURNALS,
+  ...BANGLAJOL
+    .map(b => ({ title: b.title, subjectAreas: b.subjectAreas, website: `https://www.banglajol.info/index.php/${b.slug}`, scope: 'Journal hosted on Bangladesh Journals Online (BanglaJOL). See the journal page for its aims, scope and submission guidelines.', publisher: null, openAccess: null, verification: 'listed', indexingClaims: null }))
+    .filter(j => !coreUrls.has(j.website)),
+  ...INTERNATIONAL_JOURNALS.map(j => ({ ...j, scope: `${j.subjectAreas}. See the official journal website for aims and scope.` })),
+]
+
+export const CONFERENCES = [...CORE_CONFERENCES, ...BD_CONFERENCES, ...INTL_CONFERENCES]
 
 const MOST = 'https://most.gov.bd/'
 export const FUNDING = [
@@ -133,9 +147,9 @@ export const DATASETS = [
   { title: 'Bangladesh Bureau of Statistics (BBS) Publications and Census Data', description: 'Official national statistics, including the Population and Housing Census 2022, Labour Force Survey and Household Income and Expenditure Survey reports.', authorsList: ['Bangladesh Bureau of Statistics'], researchDomain: 'Statistics, Social Science, Economics', dataModality: 'Reports and tables', fileFormat: 'PDF, XLSX', hostingPlatform: 'BBS', downloadUrl: 'https://bbs.gov.bd/', verification: 'listed' },
 ].map(d => ({ ...d, authorsList: JSON.stringify(d.authorsList) }))
 
-export const EVENTS = CONFERENCES.map(c => ({
+export const EVENTS = CONFERENCES.filter(c => c.eventDate && /Bangladesh/.test(c.location || '')).map(c => ({
   title: c.title,
-  description: `${c.researchTracks}. ${c.proceedings}`,
+  description: [c.researchTracks, c.proceedings].filter(Boolean).join('. '),
   organizer: c.organizer,
   eventType: 'conference',
   startDateTime: c.eventDate,
